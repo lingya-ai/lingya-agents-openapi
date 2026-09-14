@@ -7,7 +7,7 @@
       "query": "Summarize the quarterly report",
       "files": [
         {
-          "fileId": 42,
+          "id": 42,
           "fileName": "quarterly-report.pdf"
         }
       ]

@@ -12,11 +12,9 @@
   "response": {
     "status": 201,
     "body": {
+      "support": true,
       "url": "https://objects.example.com/uploads/quarterly-report.pdf",
-      "fileUk": "temporary-file-key",
-      "headers": {
-        "Content-MD5": "1B2M2Y8AsgTpgAmY7PhCfg=="
-      }
+      "fileUk": "temporary-file-key"
     }
   }
 }
