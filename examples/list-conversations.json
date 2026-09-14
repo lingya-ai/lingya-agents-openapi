@@ -6,12 +6,7 @@
   "response": {
     "status": 200,
     "body": {
-      "records": [],
-      "page": {
-        "current": 0,
-        "size": 30,
-        "total": 0
-      }
+      "records": []
     }
   }
 }

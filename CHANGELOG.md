@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 - 2026-09-14
+
+- Correct the Agent configuration response to match the deployed `modelConfig`, attachment metadata, and attachment limit structure.
+
 ## 0.1.0 - 2026-09-14
 
 - Publish the initial OpenAPI 3.1 contract for all 46 signed Agent channel operations.

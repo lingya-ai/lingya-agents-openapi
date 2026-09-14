@@ -81,6 +81,54 @@ const schemas = {
     },
     additionalProperties: true,
   },
+  AttachmentExtension: {
+    type: "object",
+    required: ["ext", "media"],
+    properties: {
+      ext: { type: "string" },
+      media: { type: "string" },
+    },
+  },
+  DefaultModel: {
+    type: "object",
+    required: ["keyGroupId", "model"],
+    properties: {
+      keyGroupId: { type: "integer", format: "int64" },
+      model: { type: "string" },
+    },
+  },
+  ChatModelConfig: {
+    type: "object",
+    required: ["maker", "modelName", "modelLabel", "modelDescription", "maxContextTokens", "maxOutputTokens", "supportImage", "supportVideo", "thinkingMode"],
+    properties: {
+      maker: { type: "string" },
+      modelName: { type: "string" },
+      modelLabel: { type: "string" },
+      modelDescription: { type: "string" },
+      maxContextTokens: { type: "integer", format: "int32" },
+      maxOutputTokens: { type: "integer", format: "int32" },
+      supportImage: { type: "boolean" },
+      supportVideo: { type: "boolean" },
+      thinkingMode: { type: "boolean" },
+    },
+  },
+  ModelKeyGroup: {
+    type: "object",
+    required: ["keyGroupId", "keyGroupName", "models"],
+    properties: {
+      keyGroupId: { type: "integer", format: "int64" },
+      keyGroupName: { type: "string" },
+      models: { type: "array", items: ref("ChatModelConfig") },
+    },
+  },
+  ModelConfig: {
+    type: "object",
+    required: ["defaultModel", "modelKeyGroups"],
+    properties: {
+      defaultModel: { oneOf: [ref("DefaultModel"), { type: "null" }] },
+      modelKeyGroups: { type: "array", items: ref("ModelKeyGroup") },
+    },
+  },
   AiChatFileRef: {
     type: "object",
     required: ["fileId"],
@@ -113,12 +161,12 @@ const schemas = {
   },
   AgentsConfig: {
     type: "object",
+    required: ["modelConfig", "supportAttachmentExt", "maxAttachmentCount"],
     properties: {
-      defaultModel: ref("ChatModelSpec"),
-      models: { type: "array", items: ref("ChatModelSpec") },
-      supportAttachmentExt: { type: "array", items: { type: "string" } },
+      modelConfig: ref("ModelConfig"),
+      supportAttachmentExt: { type: "array", items: ref("AttachmentExtension") },
+      maxAttachmentCount: { type: "integer", format: "int32", minimum: 0 },
     },
-    additionalProperties: true,
   },
   ConversationConfig: {
     type: "object",
@@ -307,7 +355,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Lingya Agents OpenAPI",
-    version: "0.1.0",
+    version: "0.1.1",
     description: "Public, tenant-scoped Agent channel API authenticated with OPENAPI-HMAC-SHA256-V1. Studio administration endpoints are not part of this contract.",
     license: { name: "MIT", identifier: "MIT" },
   },

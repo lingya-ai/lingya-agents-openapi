@@ -1,0 +1,43 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/channel/chat/config"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "modelConfig": {
+        "defaultModel": {
+          "keyGroupId": 42,
+          "model": "example-model"
+        },
+        "modelKeyGroups": [
+          {
+            "keyGroupId": 42,
+            "keyGroupName": "Example models",
+            "models": [
+              {
+                "maker": "OPENAI",
+                "modelName": "example-model",
+                "modelLabel": "Example model",
+                "modelDescription": "Example model used in contract validation.",
+                "maxContextTokens": 128000,
+                "maxOutputTokens": 8192,
+                "supportImage": true,
+                "supportVideo": false,
+                "thinkingMode": false
+              }
+            ]
+          }
+        ]
+      },
+      "supportAttachmentExt": [
+        {
+          "ext": ".pdf",
+          "media": "application/pdf"
+        }
+      ],
+      "maxAttachmentCount": 10
+    }
+  }
+}

@@ -31,6 +31,7 @@ ajv.addSchema(yaml, "urn:lingya:agents-openapi");
 const examples = [
   ["create-chat.json", "AiChatInput", "AiChatSubmission"],
   ["list-conversations.json", null, "ConversationSummaryList"],
+  ["get-agents-config.json", null, "AgentsConfig"],
 ];
 for (const [example, requestSchema, responseSchema] of examples) {
   const document = JSON.parse(await readFile(new URL(`examples/${example}`, root), "utf8"));
@@ -44,4 +45,4 @@ for (const [example, requestSchema, responseSchema] of examples) {
   }
 }
 
-console.log(`Validated ${operations.length} operations, ${vectors.cases.length} HMAC vectors, and 2 examples.`);
+console.log(`Validated ${operations.length} operations, ${vectors.cases.length} HMAC vectors, and ${examples.length} examples.`);
