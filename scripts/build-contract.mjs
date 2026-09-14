@@ -336,7 +336,22 @@ const schemas = {
   PlanStatus: { type: "object", required: ["pending", "status"], properties: { pending: { type: "boolean" }, status: { type: "string" } } },
   UserInputStatus: { type: "object", required: ["pending"], properties: { pending: { type: "boolean" }, question: { type: ["string", "null"] }, questionDetails: { type: ["string", "null"] }, options: { type: ["array", "null"], items: { type: "string" } }, multiple: { type: ["boolean", "null"] } } },
   UserInputAnswerInput: { type: "object", required: ["conversationId", "messageId", "questionId", "selectedOptions"], properties: { conversationId: { type: "string" }, messageId: { type: "string" }, questionId: { type: "string" }, selectedOptions: { type: "array", items: { type: "string" } }, customInput: { type: ["string", "null"] } } },
-  GeneratePreSignedUrlInput: { type: "object", required: ["fileName", "module", "contentMd5"], properties: { fileName: { type: "string", maxLength: 255 }, module: { type: "string", maxLength: 50 }, contentMd5: { type: "string", maxLength: 64 }, fileId: { type: ["integer", "null"], format: "int64" }, metadata: { type: ["object", "null"], additionalProperties: true } } },
+  GeneratePreSignedUrlInput: {
+    type: "object",
+    required: ["fileName", "module", "contentMd5"],
+    properties: {
+      fileName: { type: "string", maxLength: 255 },
+      module: {
+        type: "string",
+        pattern: "^ai-chat-attachments$",
+        example: "ai-chat-attachments",
+        description: "Registered file module for public Agent chat attachments.",
+      },
+      contentMd5: { type: "string", maxLength: 64 },
+      fileId: { type: ["integer", "null"], format: "int64" },
+      metadata: { type: ["object", "null"], additionalProperties: true },
+    },
+  },
   GeneratePreSignedUrlOutput: { type: "object", required: ["url"], properties: { url: { type: "string", format: "uri" }, fileUk: { type: ["string", "null"] }, headers: { type: "object", additionalProperties: { type: "string" } } }, additionalProperties: true },
   ConfirmUploadInput: { type: "object", required: ["fileUk", "contentMd5"], properties: { fileUk: { type: "string", maxLength: 128 }, contentMd5: { type: "string", maxLength: 64 } } },
   CreateFileInput: { type: "object", required: ["fileName", "contentMd5"], properties: { fileName: { type: "string", maxLength: 255 }, contentMd5: { type: "string", maxLength: 128 } } },
@@ -355,7 +370,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Lingya Agents OpenAPI",
-    version: "0.1.1",
+    version: "0.1.2",
     description: "Public, tenant-scoped Agent channel API authenticated with OPENAPI-HMAC-SHA256-V1. Studio administration endpoints are not part of this contract.",
     license: { name: "MIT", identifier: "MIT" },
   },

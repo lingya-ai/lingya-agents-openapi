@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Lingya Agents OpenAPI",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Public, tenant-scoped Agent channel API authenticated with OPENAPI-HMAC-SHA256-V1. Studio administration endpoints are not part of this contract.",
     "license": {
       "name": "MIT",
@@ -4851,7 +4851,9 @@
           },
           "module": {
             "type": "string",
-            "maxLength": 50
+            "pattern": "^ai-chat-attachments$",
+            "example": "ai-chat-attachments",
+            "description": "Registered file module for public Agent chat attachments."
           },
           "contentMd5": {
             "type": "string",

@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/channel/chat/files/pre-signed-url/write",
+    "contentType": "application/json",
+    "body": {
+      "fileName": "quarterly-report.pdf",
+      "module": "ai-chat-attachments",
+      "contentMd5": "1B2M2Y8AsgTpgAmY7PhCfg=="
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "url": "https://objects.example.com/uploads/quarterly-report.pdf",
+      "fileUk": "temporary-file-key",
+      "headers": {
+        "Content-MD5": "1B2M2Y8AsgTpgAmY7PhCfg=="
+      }
+    }
+  }
+}

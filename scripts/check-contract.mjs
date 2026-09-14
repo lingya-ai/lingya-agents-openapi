@@ -32,6 +32,7 @@ const examples = [
   ["create-chat.json", "AiChatInput", "AiChatSubmission"],
   ["list-conversations.json", null, "ConversationSummaryList"],
   ["get-agents-config.json", null, "AgentsConfig"],
+  ["create-pre-signed-upload.json", "GeneratePreSignedUrlInput", "GeneratePreSignedUrlOutput"],
 ];
 for (const [example, requestSchema, responseSchema] of examples) {
   const document = JSON.parse(await readFile(new URL(`examples/${example}`, root), "utf8"));

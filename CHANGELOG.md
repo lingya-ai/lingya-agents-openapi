@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 - 2026-09-14
+
+- Constrain public pre-signed uploads to the registered `ai-chat-attachments` module verified against the deployed API.
+- Add a validated pre-signed upload request and response example.
+
 ## 0.1.1 - 2026-09-14
 
 - Correct the Agent configuration response to match the deployed `modelConfig`, attachment metadata, and attachment limit structure.
