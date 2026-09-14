@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/channel/chat/conversations?current=0&size=30"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "records": [],
+      "page": {
+        "current": 0,
+        "size": 30,
+        "total": 0
+      }
+    }
+  }
+}

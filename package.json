@@ -1,0 +1,19 @@
+{
+  "name": "@lingya/agents-openapi-contract",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Canonical OpenAPI contract for the Lingya Agents public API",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-contract.mjs",
+    "check": "npm run build && node scripts/check-contract.mjs",
+    "generate:docs": "redocly build-docs openapi/lingya-agents-v1.yaml -o docs/index.html"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.41.0",
+    "@redocly/cli": "2.10.0",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "yaml": "2.8.1"
+  }
+}

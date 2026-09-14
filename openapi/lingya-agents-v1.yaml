@@ -1,0 +1,3156 @@
+openapi: 3.1.0
+info:
+  title: Lingya Agents OpenAPI
+  version: 0.1.0
+  description: Public, tenant-scoped Agent channel API authenticated with OPENAPI-HMAC-SHA256-V1. Studio administration endpoints are not part of this contract.
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: https://{tenantHost}
+    variables:
+      tenantHost:
+        default: tenant.example.com
+        description: Tenant host routed by the Lingya gateway.
+tags:
+  - name: Configuration
+    description: Configuration operations exposed to signed OpenAPI clients.
+  - name: Chat
+    description: Chat operations exposed to signed OpenAPI clients.
+  - name: Conversations
+    description: Conversations operations exposed to signed OpenAPI clients.
+  - name: Messages
+    description: Messages operations exposed to signed OpenAPI clients.
+  - name: Events
+    description: Events operations exposed to signed OpenAPI clients.
+  - name: Interactions
+    description: Interactions operations exposed to signed OpenAPI clients.
+  - name: Files
+    description: Files operations exposed to signed OpenAPI clients.
+  - name: Knowledge
+    description: Knowledge operations exposed to signed OpenAPI clients.
+  - name: Workspace
+    description: Workspace operations exposed to signed OpenAPI clients.
+  - name: SQL
+    description: SQL operations exposed to signed OpenAPI clients.
+security:
+  - OpenApiAccessKey: []
+    OpenApiTimestamp: []
+    OpenApiNonce: []
+    OpenApiUser: []
+    OpenApiSignature: []
+paths:
+  /api/agents/channel/openapi/v1/{channelId}/chat/config:
+    get:
+      operationId: getAgentsConfig
+      tags:
+        - Configuration
+      summary: getAgentsConfig
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentsConfig"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/config:
+    get:
+      operationId: getConversationConfig
+      tags:
+        - Configuration
+      summary: getConversationConfig
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationConfig"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat:
+    post:
+      operationId: createChat
+      tags:
+        - Chat
+      summary: createChat
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatSubmission"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}:
+    post:
+      operationId: continueChat
+      tags:
+        - Chat
+      summary: continueChat
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatSubmission"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatInput"
+    delete:
+      operationId: deleteConversation
+      tags:
+        - Conversations
+      summary: deleteConversation
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/stream:
+    post:
+      operationId: streamChatEvents
+      tags:
+        - Chat
+      summary: streamChatEvents
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Optional diagnostic request identifier.
+      responses:
+        "200":
+          description: Server-Sent Events stream
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/AiChatBriefEvent"
+              x-sse-wire-format: Each SSE data field is one JSON value matching this schema.
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatStreamInput"
+      x-sse: true
+  /api/agents/channel/openapi/v1/{channelId}/chat/stream-probe:
+    post:
+      operationId: probeEventStream
+      tags:
+        - Chat
+      summary: probeEventStream
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Optional diagnostic request identifier.
+      responses:
+        "200":
+          description: Server-Sent Events stream
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/ChatStreamProbeEvent"
+              x-sse-wire-format: Each SSE data field is one JSON value matching this schema.
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatStreamProbeInput"
+      x-sse: true
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/interrupt:
+    delete:
+      operationId: interruptConversation
+      tags:
+        - Chat
+      summary: interruptConversation
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/compact:
+    post:
+      operationId: compactConversation
+      tags:
+        - Chat
+      summary: compactConversation
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: force
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        "202":
+          description: Successful response
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/context-usage:
+    get:
+      operationId: getConversationContextUsage
+      tags:
+        - Conversations
+      summary: getConversationContextUsage
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationContextUsage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations:
+    get:
+      operationId: listConversations
+      tags:
+        - Conversations
+      summary: listConversations
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - &a1
+          name: current
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - &a2
+          name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+            default: 30
+        - &a3
+          name: orderBy
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - &a4
+          name: orderDirection
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: ASC
+        - &a5
+          name: orderNullHandling
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - NATIVE
+              - NULLS_FIRST
+              - NULLS_LAST
+            default: NATIVE
+        - &a6
+          name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationSummaryList"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/active:
+    get:
+      operationId: listActiveConversations
+      tags:
+        - Conversations
+      summary: listActiveConversations
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationIds"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/unread:
+    get:
+      operationId: listUnreadConversations
+      tags:
+        - Conversations
+      summary: listUnreadConversations
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationIds"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/activity/query:
+    post:
+      operationId: queryConversationActivities
+      tags:
+        - Conversations
+      summary: queryConversationActivities
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationActivityList"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationActivityBatchInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/read-receipt:
+    put:
+      operationId: markConversationRead
+      tags:
+        - Conversations
+      summary: markConversationRead
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationReadReceipt"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationReadReceiptInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/stats:
+    get:
+      operationId: getConversationStats
+      tags:
+        - Conversations
+      summary: getConversationStats
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationStats"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/title:
+    get:
+      operationId: getConversationTitle
+      tags:
+        - Conversations
+      summary: getConversationTitle
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationTitle"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: updateConversationTitle
+      tags:
+        - Conversations
+      summary: updateConversationTitle
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "202":
+          description: Successful response
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationTitleInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/status:
+    patch:
+      operationId: updateConversationStatus
+      tags:
+        - Conversations
+      summary: updateConversationStatus
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "202":
+          description: Successful response
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationStatusInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}:
+    get:
+      operationId: getSqlQueryResult
+      tags:
+        - SQL
+      summary: getSqlQueryResult
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: resultId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: current
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SqlQueryResultPage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}/chart-data:
+    get:
+      operationId: getSqlQueryChartData
+      tags:
+        - SQL
+      summary: getSqlQueryChartData
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: resultId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SqlChartDataset"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}/export:
+    get:
+      operationId: exportSqlQueryResult
+      tags:
+        - SQL
+      summary: exportSqlQueryResult
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: resultId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - CSV
+              - XLSX
+        - name: Accept
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Requested export media type.
+      responses:
+        "200":
+          description: Streaming export
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages:
+    get:
+      operationId: listConversationMessages
+      tags:
+        - Messages
+      summary: listConversationMessages
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - *a1
+        - *a2
+        - *a3
+        - *a4
+        - *a5
+        - *a6
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationMessagePage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}:
+    get:
+      operationId: getConversationMessage
+      tags:
+        - Messages
+      summary: getConversationMessage
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationMessage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks:
+    get:
+      operationId: listConversationAsyncTasks
+      tags:
+        - Messages
+      summary: listConversationAsyncTasks
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - *a1
+        - *a2
+        - *a3
+        - *a4
+        - *a5
+        - *a6
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AsyncTaskPage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/{asyncTaskId}:
+    get:
+      operationId: getConversationAsyncTask
+      tags:
+        - Messages
+      summary: getConversationAsyncTask
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: asyncTaskId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AsyncTask"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/queue:
+    delete:
+      operationId: cancelQueuedMessage
+      tags:
+        - Messages
+      summary: cancelQueuedMessage
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationMessage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/events:
+    get:
+      operationId: getChatEvents
+      tags:
+        - Events
+      summary: getChatEvents
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatBriefEventList"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/events/batch:
+    post:
+      operationId: getChatEventsBatch
+      tags:
+        - Events
+      summary: getChatEventsBatch
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiChatEventsBatch"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatEventsBatchInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares:
+    get:
+      operationId: listConversationShares
+      tags:
+        - Conversations
+      summary: listConversationShares
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationShareList"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: createConversationShare
+      tags:
+        - Conversations
+      summary: createConversationShare
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationShare"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationShareInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares/{shareId}:
+    delete:
+      operationId: revokeConversationShare
+      tags:
+        - Conversations
+      summary: revokeConversationShare
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationShare"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/plan/approve:
+    post:
+      operationId: approvePlan
+      tags:
+        - Interactions
+      summary: approvePlan
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResult"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanApprovalInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/plan/{planId}/status:
+    get:
+      operationId: getPlanStatus
+      tags:
+        - Interactions
+      summary: getPlanStatus
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanStatus"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/user-input/{questionId}/status:
+    get:
+      operationId: getUserInputStatus
+      tags:
+        - Interactions
+      summary: getUserInputStatus
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInputStatus"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/user-input/answer:
+    post:
+      operationId: answerUserInput
+      tags:
+        - Interactions
+      summary: answerUserInput
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResult"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInputAnswerInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/files/pre-signed-url/write:
+    post:
+      operationId: createPreSignedUpload
+      tags:
+        - Files
+      summary: createPreSignedUpload
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratePreSignedUrlOutput"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeneratePreSignedUrlInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/files/pre-signed-url/confirm:
+    post:
+      operationId: confirmPreSignedUpload
+      tags:
+        - Files
+      summary: confirmPreSignedUpload
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentFile"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmUploadInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/files/contentMd5:
+    post:
+      operationId: createFileByContentMd5
+      tags:
+        - Files
+      summary: createFileByContentMd5
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentFile"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFileInput"
+  /api/agents/channel/openapi/v1/{channelId}/chat/files/meta/contentMd5:
+    get:
+      operationId: fileExistsByContentMd5
+      tags:
+        - Files
+      summary: fileExistsByContentMd5
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: contentMd5
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileExists"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/files/{fileId}/preview:
+    get:
+      operationId: getConversationFilePreview
+      tags:
+        - Files
+      summary: getConversationFilePreview
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreSignedReadUrl"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/plan-intermediate-files/{fileId}/preview:
+    get:
+      operationId: getPlanIntermediateFilePreview
+      tags:
+        - Files
+      summary: getPlanIntermediateFilePreview
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreSignedReadUrl"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/knowledge-bases/citations/metadata:
+    post:
+      operationId: getCitationMetadataBatch
+      tags:
+        - Knowledge
+      summary: getCitationMetadataBatch
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CitationMetadataList"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReturnedReferenceList"
+  /api/agents/channel/openapi/v1/{channelId}/chat/knowledge-bases/citations/{citationType}/{referenceId}/metadata:
+    get:
+      operationId: getCitationMetadata
+      tags:
+        - Knowledge
+      summary: getCitationMetadata
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: citationType
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: referenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CitationMetadata"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/workspace/files:
+    get:
+      operationId: listWorkspaceArtifacts
+      tags:
+        - Workspace
+      summary: listWorkspaceArtifacts
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - *a1
+        - *a2
+        - *a3
+        - *a4
+        - *a5
+        - *a6
+        - name: prefix
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceArtifactList"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/workspace/files/preview:
+    get:
+      operationId: getWorkspaceFilePreview
+      tags:
+        - Workspace
+      summary: getWorkspaceFilePreview
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreSignedReadUrl"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+components:
+  securitySchemes:
+    OpenApiAccessKey:
+      type: apiKey
+      in: header
+      name: X-OpenAPI-AK
+      description: 32-character access key.
+    OpenApiTimestamp:
+      type: apiKey
+      in: header
+      name: X-OpenAPI-Timestamp
+      description: Unix epoch seconds within ±300 seconds of server time.
+    OpenApiNonce:
+      type: apiKey
+      in: header
+      name: X-OpenAPI-Nonce
+      description: Unpadded Base64URL encoding of 16-64 cryptographically random bytes. A nonce can be used only once.
+    OpenApiUser:
+      type: apiKey
+      in: header
+      name: X-OpenAPI-User
+      description: Unpadded Base64URL encoding of the 1-256 byte UTF-8 external user identifier.
+    OpenApiSignature:
+      type: apiKey
+      in: header
+      name: X-OpenAPI-Signature
+      description: Lowercase hexadecimal HMAC-SHA256 signature. The secret is never sent.
+  responses:
+    Error:
+      description: API error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CodeMessage"
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+  schemas:
+    CodeMessage:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    FieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - code
+        - message
+        - fields
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+    PageInfo:
+      type: object
+      required:
+        - current
+        - size
+        - total
+      properties:
+        current:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 0
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+    ChatModelSpec:
+      type: object
+      properties:
+        provider:
+          type: string
+        model:
+          type: string
+        keyGroupId:
+          type: integer
+          format: int64
+      additionalProperties: true
+    AiChatFileRef:
+      type: object
+      required:
+        - fileId
+      properties:
+        fileId:
+          type: integer
+          format: int64
+        fileName:
+          type: string
+      additionalProperties: true
+    AiChatInput:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          minLength: 1
+        conversationId:
+          type:
+            - string
+            - "null"
+        chatModelSpec:
+          oneOf:
+            - $ref: "#/components/schemas/ChatModelSpec"
+            - type: "null"
+        files:
+          type:
+            - array
+            - "null"
+          items:
+            $ref: "#/components/schemas/AiChatFileRef"
+    AiChatStreamInput:
+      type: object
+      required:
+        - messageId
+      properties:
+        messageId:
+          type: string
+          minLength: 1
+    AiChatSubmission:
+      type: object
+      required:
+        - conversationId
+        - messageId
+        - disposition
+        - status
+      properties:
+        conversationId:
+          type: string
+        messageId:
+          type: string
+        disposition:
+          type: string
+          description: Dispatch disposition. Unknown future values must be preserved.
+        status:
+          type: string
+          description: Persisted message status. Unknown future values must be preserved.
+    AgentsConfig:
+      type: object
+      properties:
+        defaultModel:
+          $ref: "#/components/schemas/ChatModelSpec"
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatModelSpec"
+        supportAttachmentExt:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+    ConversationConfig:
+      type: object
+      properties:
+        lastChatModelSpec:
+          oneOf:
+            - $ref: "#/components/schemas/ChatModelSpec"
+            - type: "null"
+    ConversationSummary:
+      type: object
+      required:
+        - conversationId
+      properties:
+        conversationId:
+          type: string
+        title:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+        createdTime:
+          type: string
+          format: date-time
+        lastUpdateTime:
+          type: string
+          format: date-time
+      additionalProperties: true
+    ConversationSummaryList:
+      type: object
+      required:
+        - records
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationSummary"
+    ConversationStats:
+      type: object
+      required:
+        - publishId
+        - totalConversations
+        - activeConversations
+        - totalMessages
+        - totalTokens
+        - avgMessagesPerConversation
+      properties:
+        publishId:
+          type: string
+        totalConversations:
+          type: integer
+          format: int64
+        activeConversations:
+          type: integer
+          format: int64
+        totalMessages:
+          type: integer
+          format: int64
+        totalTokens:
+          type: integer
+          format: int64
+        avgMessagesPerConversation:
+          type: number
+          format: double
+    ConversationIds:
+      type: object
+      required:
+        - conversationIds
+      properties:
+        conversationIds:
+          type: array
+          items:
+            type: string
+    ConversationActivityBatchInput:
+      type: object
+      required:
+        - conversationIds
+      properties:
+        conversationIds:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            type: string
+            minLength: 1
+            maxLength: 64
+    ConversationActivity:
+      type: object
+      required:
+        - conversationId
+        - hasUnreadCompletion
+      properties:
+        conversationId:
+          type: string
+        executionStatus:
+          type:
+            - string
+            - "null"
+        activeMessageId:
+          type:
+            - string
+            - "null"
+        executionEpoch:
+          type:
+            - integer
+            - "null"
+          format: int64
+        executionStartedTime:
+          type:
+            - string
+            - "null"
+          format: date-time
+        latestTerminalMessageId:
+          type:
+            - string
+            - "null"
+        latestTerminalTime:
+          type:
+            - string
+            - "null"
+          format: date-time
+        hasUnreadCompletion:
+          type: boolean
+    ConversationActivityList:
+      type: object
+      required:
+        - records
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationActivity"
+    ConversationReadReceiptInput:
+      type: object
+      required:
+        - messageId
+      properties:
+        messageId:
+          type: string
+          minLength: 1
+          maxLength: 64
+    ConversationReadReceipt:
+      allOf:
+        - $ref: "#/components/schemas/ConversationActivity"
+    ConversationContextUsage:
+      type: object
+      properties:
+        usedTokens:
+          type: integer
+          format: int64
+        maxTokens:
+          type: integer
+          format: int64
+        usageRatio:
+          type: number
+          format: double
+      additionalProperties: true
+    ConversationTitle:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        generating:
+          type: boolean
+          default: false
+      additionalProperties: true
+    ConversationTitleInput:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+    ConversationStatusInput:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+    ConversationUserMessage:
+      type: object
+      properties:
+        query:
+          type: string
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiChatFileRef"
+      additionalProperties: true
+    ConversationMessage:
+      type: object
+      required:
+        - messageId
+        - userMessage
+        - inputTokens
+        - outputTokens
+        - totalTokens
+        - status
+        - createdTime
+        - lastUpdateTime
+      properties:
+        messageId:
+          type: string
+        userMessage:
+          $ref: "#/components/schemas/ConversationUserMessage"
+        inputTokens:
+          type: integer
+          format: int64
+        outputTokens:
+          type: integer
+          format: int64
+        totalTokens:
+          type: integer
+          format: int64
+        executionTimeMillis:
+          type: integer
+          format: int64
+        processingSteps:
+          type: integer
+        totalToolCalls:
+          type: integer
+        status:
+          type: string
+        createdTime:
+          type: string
+          format: date-time
+        lastUpdateTime:
+          type: string
+          format: date-time
+        executionType:
+          type: string
+        parentMessageId:
+          type:
+            - string
+            - "null"
+      additionalProperties: true
+    ConversationMessagePage:
+      type: object
+      required:
+        - records
+        - page
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationMessage"
+        page:
+          $ref: "#/components/schemas/PageInfo"
+    AsyncTask:
+      type: object
+      required:
+        - asyncTaskId
+        - status
+      properties:
+        asyncTaskId:
+          type: string
+        status:
+          type: string
+        createdTime:
+          type: string
+          format: date-time
+      additionalProperties: true
+    AsyncTaskPage:
+      type: object
+      required:
+        - records
+        - page
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/AsyncTask"
+        page:
+          $ref: "#/components/schemas/PageInfo"
+    AiChatEventsBatchInput:
+      type: object
+      required:
+        - conversationId
+        - messageIds
+      properties:
+        conversationId:
+          type: string
+          minLength: 1
+        messageIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: string
+            minLength: 1
+    ChatStreamProbeInput:
+      type: object
+      required:
+        - probeId
+      properties:
+        probeId:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{1,80}$
+    ChatStreamProbeEvent:
+      type: object
+      required:
+        - probeId
+        - sequence
+        - serverElapsedMs
+      properties:
+        probeId:
+          type: string
+        sequence:
+          type: integer
+        serverElapsedMs:
+          type: integer
+          format: int64
+    BaseAiChatBriefEvent:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+      additionalProperties: true
+    AiChatTextBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+    AiChatErrorBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          required:
+            - message
+          properties:
+            type:
+              const: error
+            message:
+              type: string
+    AiChatUserQueryBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          required:
+            - query
+          properties:
+            type:
+              const: user-query
+            query:
+              type: string
+            attachments:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                additionalProperties: true
+    AiChatToolExecutionBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          required:
+            - toolCallId
+            - toolName
+            - status
+          properties:
+            type:
+              const: tool-execution
+            toolCallId:
+              type: string
+            toolName:
+              type: string
+            status:
+              type: string
+            action:
+              type: string
+            summary:
+              type:
+                - string
+                - "null"
+            extension:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+    AiChatAwaitingInputBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          required:
+            - questionId
+            - conversationId
+            - messageId
+            - question
+            - options
+            - multiple
+            - timeoutSeconds
+          properties:
+            type:
+              const: tool-execution-awaiting-user-input
+            questionId:
+              type: string
+            conversationId:
+              type: string
+            messageId:
+              type: string
+            question:
+              type: string
+            questionDetails:
+              type: string
+            options:
+              type: array
+              items:
+                type: string
+            multiple:
+              type: boolean
+            timeoutSeconds:
+              type: integer
+            expiresAt:
+              type:
+                - string
+                - "null"
+              format: date-time
+            serverNow:
+              type:
+                - string
+                - "null"
+              format: date-time
+    AiChatSubAgentCallBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          required:
+            - toolCallId
+            - toolName
+            - subAgentConversationId
+            - subAgentMessageId
+          properties:
+            type:
+              const: tool-execution-sub-agent-call
+            toolCallId:
+              type: string
+            toolName:
+              type: string
+            subAgentConversationId:
+              type: string
+            subAgentMessageId:
+              type: string
+    AiChatCompactorWarningBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          required:
+            - level
+            - warning
+          properties:
+            type:
+              const: compactor-warning
+            level:
+              type: string
+            warning:
+              type: string
+    AiChatEndBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          properties:
+            type:
+              const: end
+            totalTokens:
+              type: integer
+              format: int64
+            artifacts:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            nonFileArtifacts:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+          additionalProperties: true
+    AiChatObjectBriefEvent:
+      allOf:
+        - $ref: "#/components/schemas/BaseAiChatBriefEvent"
+        - type: object
+          additionalProperties: true
+    AiChatBriefEvent:
+      oneOf:
+        - $ref: "#/components/schemas/AiChatTextBriefEvent"
+        - $ref: "#/components/schemas/AiChatErrorBriefEvent"
+        - $ref: "#/components/schemas/AiChatUserQueryBriefEvent"
+        - $ref: "#/components/schemas/AiChatToolExecutionBriefEvent"
+        - $ref: "#/components/schemas/AiChatAwaitingInputBriefEvent"
+        - $ref: "#/components/schemas/AiChatSubAgentCallBriefEvent"
+        - $ref: "#/components/schemas/AiChatCompactorWarningBriefEvent"
+        - $ref: "#/components/schemas/AiChatEndBriefEvent"
+        - $ref: "#/components/schemas/AiChatObjectBriefEvent"
+      discriminator:
+        propertyName: type
+        mapping:
+          message: "#/components/schemas/AiChatTextBriefEvent"
+          think: "#/components/schemas/AiChatTextBriefEvent"
+          error: "#/components/schemas/AiChatErrorBriefEvent"
+          user-query: "#/components/schemas/AiChatUserQueryBriefEvent"
+          tool-execution: "#/components/schemas/AiChatToolExecutionBriefEvent"
+          tool-execution-awaiting-user-input: "#/components/schemas/AiChatAwaitingInputBriefEvent"
+          tool-execution-sub-agent-call: "#/components/schemas/AiChatSubAgentCallBriefEvent"
+          compactor-warning: "#/components/schemas/AiChatCompactorWarningBriefEvent"
+          end: "#/components/schemas/AiChatEndBriefEvent"
+          start: "#/components/schemas/AiChatObjectBriefEvent"
+          manual-interrupt: "#/components/schemas/AiChatObjectBriefEvent"
+          compressor-context-start: "#/components/schemas/AiChatObjectBriefEvent"
+          compressor-context-end: "#/components/schemas/AiChatObjectBriefEvent"
+          chat-client-request: "#/components/schemas/AiChatObjectBriefEvent"
+          chat-client-response: "#/components/schemas/AiChatObjectBriefEvent"
+    AiChatBriefEventList:
+      type: object
+      required:
+        - records
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiChatBriefEvent"
+    AiChatEventsBatch:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        skipped:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+    ConversationShareInput:
+      type: object
+      properties:
+        password:
+          type:
+            - string
+            - "null"
+          pattern: ^[0-9]{6}$
+        expiresAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+    ConversationShare:
+      type: object
+      required:
+        - shareId
+      properties:
+        shareId:
+          type: integer
+          format: int64
+        url:
+          type: string
+          format: uri
+        expiresAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+      additionalProperties: true
+    ConversationShareList:
+      type: object
+      required:
+        - records
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationShare"
+    PlanApprovalInput:
+      type: object
+      required:
+        - conversationId
+        - messageId
+        - approved
+      properties:
+        conversationId:
+          type: string
+        messageId:
+          type: string
+        approved:
+          type: boolean
+        feedback:
+          type:
+            - string
+            - "null"
+    OperationResult:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+        message:
+          type:
+            - string
+            - "null"
+      additionalProperties: true
+    PlanStatus:
+      type: object
+      required:
+        - pending
+        - status
+      properties:
+        pending:
+          type: boolean
+        status:
+          type: string
+    UserInputStatus:
+      type: object
+      required:
+        - pending
+      properties:
+        pending:
+          type: boolean
+        question:
+          type:
+            - string
+            - "null"
+        questionDetails:
+          type:
+            - string
+            - "null"
+        options:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+        multiple:
+          type:
+            - boolean
+            - "null"
+    UserInputAnswerInput:
+      type: object
+      required:
+        - conversationId
+        - messageId
+        - questionId
+        - selectedOptions
+      properties:
+        conversationId:
+          type: string
+        messageId:
+          type: string
+        questionId:
+          type: string
+        selectedOptions:
+          type: array
+          items:
+            type: string
+        customInput:
+          type:
+            - string
+            - "null"
+    GeneratePreSignedUrlInput:
+      type: object
+      required:
+        - fileName
+        - module
+        - contentMd5
+      properties:
+        fileName:
+          type: string
+          maxLength: 255
+        module:
+          type: string
+          maxLength: 50
+        contentMd5:
+          type: string
+          maxLength: 64
+        fileId:
+          type:
+            - integer
+            - "null"
+          format: int64
+        metadata:
+          type:
+            - object
+            - "null"
+          additionalProperties: true
+    GeneratePreSignedUrlOutput:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        fileUk:
+          type:
+            - string
+            - "null"
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: true
+    ConfirmUploadInput:
+      type: object
+      required:
+        - fileUk
+        - contentMd5
+      properties:
+        fileUk:
+          type: string
+          maxLength: 128
+        contentMd5:
+          type: string
+          maxLength: 64
+    CreateFileInput:
+      type: object
+      required:
+        - fileName
+        - contentMd5
+      properties:
+        fileName:
+          type: string
+          maxLength: 255
+        contentMd5:
+          type: string
+          maxLength: 128
+    AgentFile:
+      type: object
+      required:
+        - id
+        - fileName
+      properties:
+        id:
+          type: integer
+          format: int64
+        fileName:
+          type: string
+        contentMd5:
+          type:
+            - string
+            - "null"
+        size:
+          type:
+            - integer
+            - "null"
+          format: int64
+        contentType:
+          type:
+            - string
+            - "null"
+      additionalProperties: true
+    FileExists:
+      type: object
+      required:
+        - exists
+      properties:
+        exists:
+          type: boolean
+    PreSignedReadUrl:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        expiresAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+      additionalProperties: true
+    ReturnedReference:
+      type: object
+      required:
+        - citationType
+        - referenceId
+      properties:
+        citationType:
+          type: string
+        referenceId:
+          type: integer
+          format: int64
+    CitationMetadata:
+      type: object
+      required:
+        - citationType
+        - referenceId
+      properties:
+        citationType:
+          type: string
+        referenceId:
+          type: integer
+          format: int64
+        title:
+          type:
+            - string
+            - "null"
+        content:
+          type:
+            - string
+            - "null"
+      additionalProperties: true
+    CitationMetadataList:
+      type: object
+      required:
+        - records
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/CitationMetadata"
+    WorkspaceArtifactList:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentFile"
+        nonFileArtifacts:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+    SqlQueryResultPage:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        records:
+          type: array
+          items:
+            type: array
+            items: {}
+        page:
+          $ref: "#/components/schemas/PageInfo"
+      additionalProperties: true
+    SqlChartDataset:
+      type: object
+      additionalProperties: true
+    ReturnedReferenceList:
+      type: array
+      items:
+        $ref: "#/components/schemas/ReturnedReference"
+      minItems: 1
+x-lingya-hmac:
+  algorithm: HMAC-SHA256
+  version: OPENAPI-HMAC-SHA256-V1
+  canonicalFields:
+    - version
+    - accessKey
+    - timestamp
+    - nonce
+    - method
+    - rawPath
+    - rawQuery
+    - encodedUser
+    - contentType
+    - sha256(body)
+  separator: \n
+  signatureEncoding: lowercase-hex
+  notes:
+    - Build the final request URI and body bytes before signing.
+    - Do not re-encode the path, query, JSON, or Content-Type after signing.
+    - Content-Encoding is not supported. Request bodies are limited to 2 MiB.

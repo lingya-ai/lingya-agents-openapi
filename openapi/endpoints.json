@@ -1,0 +1,232 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/config",
+    "operationId": "getAgentsConfig"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/config",
+    "operationId": "getConversationConfig"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat",
+    "operationId": "createChat"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}",
+    "operationId": "continueChat"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}",
+    "operationId": "deleteConversation"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/stream",
+    "operationId": "streamChatEvents"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/stream-probe",
+    "operationId": "probeEventStream"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/interrupt",
+    "operationId": "interruptConversation"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/compact",
+    "operationId": "compactConversation"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/context-usage",
+    "operationId": "getConversationContextUsage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations",
+    "operationId": "listConversations"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/active",
+    "operationId": "listActiveConversations"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/unread",
+    "operationId": "listUnreadConversations"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/activity/query",
+    "operationId": "queryConversationActivities"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/read-receipt",
+    "operationId": "markConversationRead"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/stats",
+    "operationId": "getConversationStats"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/title",
+    "operationId": "getConversationTitle"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/title",
+    "operationId": "updateConversationTitle"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/status",
+    "operationId": "updateConversationStatus"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}",
+    "operationId": "getSqlQueryResult"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}/chart-data",
+    "operationId": "getSqlQueryChartData"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}/export",
+    "operationId": "exportSqlQueryResult"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages",
+    "operationId": "listConversationMessages"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}",
+    "operationId": "getConversationMessage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks",
+    "operationId": "listConversationAsyncTasks"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/{asyncTaskId}",
+    "operationId": "getConversationAsyncTask"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/queue",
+    "operationId": "cancelQueuedMessage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/events",
+    "operationId": "getChatEvents"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/events/batch",
+    "operationId": "getChatEventsBatch"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares",
+    "operationId": "listConversationShares"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares",
+    "operationId": "createConversationShare"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares/{shareId}",
+    "operationId": "revokeConversationShare"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/plan/approve",
+    "operationId": "approvePlan"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/plan/{planId}/status",
+    "operationId": "getPlanStatus"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/user-input/{questionId}/status",
+    "operationId": "getUserInputStatus"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/user-input/answer",
+    "operationId": "answerUserInput"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/pre-signed-url/write",
+    "operationId": "createPreSignedUpload"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/pre-signed-url/confirm",
+    "operationId": "confirmPreSignedUpload"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/contentMd5",
+    "operationId": "createFileByContentMd5"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/meta/contentMd5",
+    "operationId": "fileExistsByContentMd5"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/files/{fileId}/preview",
+    "operationId": "getConversationFilePreview"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/plan-intermediate-files/{fileId}/preview",
+    "operationId": "getPlanIntermediateFilePreview"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/knowledge-bases/citations/metadata",
+    "operationId": "getCitationMetadataBatch"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/knowledge-bases/citations/{citationType}/{referenceId}/metadata",
+    "operationId": "getCitationMetadata"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/workspace/files",
+    "operationId": "listWorkspaceArtifacts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/workspace/files/preview",
+    "operationId": "getWorkspaceFilePreview"
+  }
+]

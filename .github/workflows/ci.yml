@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npx openapi-generator-cli validate -i openapi/lingya-agents-v1.yaml
+      - name: Verify OpenAPI Generator compatibility
+        run: npx openapi-generator-cli generate -i openapi/lingya-agents-v1.yaml -g kotlin -o /tmp/lingya-sdk-generated --global-property apiTests=false,modelTests=false
+      - run: npx redocly lint openapi/lingya-agents-v1.yaml --max-problems 0
+      - run: npm run generate:docs
+      - name: Check generated artifacts
+        run: git diff --exit-code
+      - name: Check backward compatibility
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          git show "origin/${{ github.base_ref }}:openapi/lingya-agents-v1.yaml" > /tmp/base.yaml
+          curl -fsSL https://github.com/oasdiff/oasdiff/releases/download/v1.32.0/oasdiff_1.32.0_linux_amd64.tar.gz | tar -xz -C /tmp oasdiff
+          /tmp/oasdiff breaking /tmp/base.yaml openapi/lingya-agents-v1.yaml --fail-on ERR

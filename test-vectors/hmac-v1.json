@@ -1,0 +1,35 @@
+{
+  "version": "OPENAPI-HMAC-SHA256-V1",
+  "cases": [
+    {
+      "name": "unicode-query-and-json-body",
+      "accessKey": "abcdefghijklmnopqrstuvwxyzABCDEF",
+      "secret": "test-secret",
+      "timestamp": "1735689600",
+      "nonce": "MDEyMzQ1Njc4OWFiY2RlZg",
+      "method": "POST",
+      "rawPath": "/api/agents/channel/openapi/v1/channel/chat/conversations/conversation-1",
+      "rawQuery": "q=%E4%B8%AD&q=a+b&slash=%2F",
+      "encodedUser": "5aSW6YOo55So5oi3LTE",
+      "contentType": "application/json",
+      "bodyBase64": "eyJxdWVyeSI6IuS9oOWlvSJ9",
+      "canonical": "OPENAPI-HMAC-SHA256-V1\nabcdefghijklmnopqrstuvwxyzABCDEF\n1735689600\nMDEyMzQ1Njc4OWFiY2RlZg\nPOST\n/api/agents/channel/openapi/v1/channel/chat/conversations/conversation-1\nq=%E4%B8%AD&q=a+b&slash=%2F\n5aSW6YOo55So5oi3LTE\napplication/json\n1f8d9ccc5728ccb230f2484cc18d998576d82c1a410b11a35c98d90155cf010a",
+      "signature": "569610432244c0edb24dec2c2cd361e79b5670385b770adf1321989038f9e99e"
+    },
+    {
+      "name": "empty-get-body",
+      "accessKey": "abcdefghijklmnopqrstuvwxyzABCDEF",
+      "secret": "test-secret",
+      "timestamp": "1735689600",
+      "nonce": "MDEyMzQ1Njc4OWFiY2RlZg",
+      "method": "GET",
+      "rawPath": "/api/agents/channel/openapi/v1/channel/chat/config",
+      "rawQuery": "",
+      "encodedUser": "dXNlci0x",
+      "contentType": "",
+      "bodyBase64": "",
+      "canonical": "OPENAPI-HMAC-SHA256-V1\nabcdefghijklmnopqrstuvwxyzABCDEF\n1735689600\nMDEyMzQ1Njc4OWFiY2RlZg\nGET\n/api/agents/channel/openapi/v1/channel/chat/config\n\ndXNlci0x\n\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signature": "2e922c297676b43979c861d3133e17c9e6adf579daf380f53881357855a9184e"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/channel/chat",
+    "contentType": "application/json",
+    "body": {
+      "query": "Summarize the quarterly report",
+      "files": [
+        {
+          "fileId": 42,
+          "fileName": "quarterly-report.pdf"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "conversationId": "conversation-1",
+      "messageId": "message-1",
+      "disposition": "queued",
+      "status": "pending"
+    }
+  }
+}
