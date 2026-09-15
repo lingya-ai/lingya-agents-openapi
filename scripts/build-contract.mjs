@@ -21,6 +21,7 @@ const pathParam = (name, format) => ({
   in: "path",
   required: true,
   schema: format === "int64" ? { type: "integer", format } : { type: "string", minLength: 1 },
+  ...(name === "channelId" ? { "x-lingya-sdk-bound-from": "channelId" } : {}),
 });
 const queryParam = (name, schema = { type: "string" }, required = false, description) => ({
   name,
@@ -784,7 +785,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Lingya Agents OpenAPI",
-    version: "0.1.2",
+    version: "0.1.3",
     description: "Public, tenant-scoped Agent channel API authenticated with OPENAPI-HMAC-SHA256-V1. Studio administration endpoints are not part of this contract.",
     license: { name: "MIT", identifier: "MIT" },
   },
@@ -1022,8 +1023,39 @@ for (const [path, item] of Object.entries(spec.paths)) {
 const yaml = YAML.stringify(spec, { indent: 2, lineWidth: 0 });
 await writeFile(new URL("lingya-agents-v1.yaml", contractDir), yaml, "utf8");
 await writeFile(new URL("lingya-agents-v1.json", contractDir), `${JSON.stringify(spec, null, 2)}\n`, "utf8");
+const schemaName = (schema) => schema?.$ref?.split("/").at(-1) ?? null;
 const endpointManifest = Object.entries(spec.paths).flatMap(([path, item]) =>
-  Object.entries(item).map(([method, operation]) => ({ method: method.toUpperCase(), path, operationId: operation.operationId })),
+  Object.entries(item).map(([method, operation]) => {
+    const success = Object.entries(operation.responses).find(([status]) => /^2\d\d$/.test(status));
+    const responseContent = success?.[1]?.content ?? {};
+    const responseMediaType = Object.keys(responseContent)[0] ?? null;
+    const responseSchema = responseContent[responseMediaType]?.schema;
+    return {
+      method: method.toUpperCase(),
+      path,
+      relativePath: path.slice(prefix.length),
+      operationId: operation.operationId,
+      group: operation.tags[0].toLowerCase(),
+      summary: operation.summary,
+      description: operation.description,
+      parameters: operation.parameters.map((parameter) => ({
+        name: parameter.name,
+        in: parameter.in,
+        required: parameter.required === true,
+        description: parameter.description,
+        schema: parameter.schema,
+        boundFrom: parameter["x-lingya-sdk-bound-from"] ?? null,
+      })),
+      requestBodySchema: schemaName(operation.requestBody?.content?.["application/json"]?.schema),
+      response: {
+        status: success?.[0] ?? null,
+        mediaType: responseMediaType,
+        schema: schemaName(responseSchema),
+        format: responseSchema?.format ?? null,
+      },
+      sse: operation["x-sse"] === true,
+    };
+  }),
 );
 await writeFile(new URL("endpoints.json", contractDir), `${JSON.stringify(endpointManifest, null, 2)}\n`, "utf8");
 

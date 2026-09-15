@@ -9,19 +9,32 @@ const json = JSON.parse(await readFile(new URL("openapi/lingya-agents-v1.json", 
 const operations = Object.entries(yaml.paths).flatMap(([path, item]) =>
   Object.entries(item).filter(([method]) => ["get", "post", "put", "patch", "delete"].includes(method)).map(([method, operation]) => ({ path, method, operation })),
 );
+const manifest = JSON.parse(await readFile(new URL("openapi/endpoints.json", root), "utf8"));
 
 if (operations.length !== 46) throw new Error(`Expected 46 operations, found ${operations.length}`);
 const ids = operations.map(({ operation }) => operation.operationId);
 if (new Set(ids).size !== ids.length) throw new Error("operationId values must be unique");
 for (const { path, method, operation } of operations) {
   if (!path.startsWith("/api/agents/channel/openapi/v1/{channelId}/chat")) throw new Error(`Unexpected public path: ${path}`);
-  if (!operation.parameters.some((parameter) => parameter.name === "channelId" && parameter.in === "path")) throw new Error(`Missing channelId on ${method} ${path}`);
+  const channelParameter = operation.parameters.find((parameter) => parameter.name === "channelId" && parameter.in === "path");
+  if (!channelParameter) throw new Error(`Missing channelId on ${method} ${path}`);
+  if (channelParameter["x-lingya-sdk-bound-from"] !== "channelId") throw new Error(`Missing SDK channel binding on ${method} ${path}`);
   if (!operation.summary?.includes(" / ") || !operation.description?.includes(" / ")) throw new Error(`Missing bilingual operation documentation: ${method} ${path}`);
   if (operation.summary === operation.operationId) throw new Error(`summary must not repeat operationId: ${operation.operationId}`);
   for (const parameter of operation.parameters) {
     if (!parameter.description?.includes(" / ")) throw new Error(`Missing bilingual parameter documentation: ${operation.operationId}.${parameter.name}`);
   }
   if (operation.requestBody && !operation.requestBody.description?.includes(" / ")) throw new Error(`Missing bilingual request-body documentation: ${operation.operationId}`);
+}
+if (manifest.length !== operations.length) throw new Error(`Expected ${operations.length} manifest operations, found ${manifest.length}`);
+for (const entry of manifest) {
+  const operation = operations.find(({ path, method, operation }) => path === entry.path && method.toUpperCase() === entry.method && operation.operationId === entry.operationId);
+  if (!operation) throw new Error(`Manifest operation does not exist in the contract: ${entry.method} ${entry.path}`);
+  if (!entry.group || !entry.summary || !entry.description || !entry.relativePath.startsWith("/") && entry.relativePath !== "") {
+    throw new Error(`Incomplete manifest metadata for ${entry.operationId}`);
+  }
+  const channelParameter = entry.parameters.find((parameter) => parameter.name === "channelId");
+  if (channelParameter?.boundFrom !== "channelId") throw new Error(`Manifest does not bind channelId for ${entry.operationId}`);
 }
 if (JSON.stringify(yaml) !== JSON.stringify(json)) throw new Error("YAML and JSON contract artifacts differ");
 

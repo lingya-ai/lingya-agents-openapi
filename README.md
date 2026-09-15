@@ -19,6 +19,9 @@ The source contract is `openapi/lingya-agents-v1.yaml`; `openapi/lingya-agents-v
 请求与响应示例位于 `examples/`，确定性 HMAC 向量与 SSE 线协议样本位于 `test-vectors/`；OpenAPI Generator 通过 `openapitools.json` 固定为 7.25.0。
 Request and response examples live in `examples/`; deterministic HMAC vectors and an SSE wire sample live in `test-vectors/`. OpenAPI Generator is pinned to 7.25.0 through `openapitools.json`.
 
+`openapi/endpoints.json` 为 SDK 提供完整 operation manifest；其中 `channelId` 标记为根客户端绑定参数，不会从 HTTP 契约中删除。
+`openapi/endpoints.json` provides the complete SDK operation manifest; it marks `channelId` as root-client-bound without removing it from the HTTP contract.
+
 ## 认证
 Authentication
 

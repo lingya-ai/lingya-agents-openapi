@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Mark `channelId` as a client-bound SDK parameter without changing the HTTP contract.
+- Expand the generated endpoint manifest with groups, typed inputs, responses, parameters, and streaming metadata.
+
 ## 0.1.2 - 2026-09-14
 
 - Constrain public pre-signed uploads to the registered `ai-chat-attachments` module verified against the deployed API.

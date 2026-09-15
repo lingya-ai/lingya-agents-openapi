@@ -26,7 +26,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" openapi/lingya-agents-v1.yaml openapi/lingya-agents-v1.json openapi/endpoints.json docs/index.html --generate-notes
-      - name: Notify Kotlin SDK
+      - name: Notify SDK repositories
         env:
           GH_TOKEN: ${{ secrets.SDK_AUTOMATION_TOKEN }}
         shell: bash
@@ -35,6 +35,13 @@ jobs:
             echo "SDK_AUTOMATION_TOKEN is not configured; skipping SDK update dispatch."
             exit 0
           fi
-          gh api repos/lingya-ai/lingya-agents-sdk-kotlin/dispatches \
-            -f event_type=contract-released \
-            -F client_payload[tag]="$GITHUB_REF_NAME"
+          for repository in \
+            lingya-agents-sdk-kotlin \
+            lingya-agents-sdk-typescript \
+            lingya-agents-sdk-python \
+            lingya-agents-sdk-rust
+          do
+            gh api "repos/lingya-ai/${repository}/dispatches" \
+              -f event_type=contract-released \
+              -F client_payload[tag]="$GITHUB_REF_NAME"
+          done

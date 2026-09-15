@@ -2,231 +2,2314 @@
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/config",
-    "operationId": "getAgentsConfig"
+    "relativePath": "/config",
+    "operationId": "getAgentsConfig",
+    "group": "configuration",
+    "summary": "读取 Agent 配置 / Get Agent configuration",
+    "description": "读取 Agent 配置 / Get Agent configuration 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AgentsConfig",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/config",
-    "operationId": "getConversationConfig"
+    "relativePath": "/conversations/{conversationId}/config",
+    "operationId": "getConversationConfig",
+    "group": "configuration",
+    "summary": "读取会话配置 / Get conversation configuration",
+    "description": "读取会话配置 / Get conversation configuration 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationConfig",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat",
-    "operationId": "createChat"
+    "relativePath": "",
+    "operationId": "createChat",
+    "group": "chat",
+    "summary": "创建会话并提交消息 / Create a conversation and submit a message",
+    "description": "创建会话并提交消息 / Create a conversation and submit a message 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "AiChatInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AiChatSubmission",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}",
-    "operationId": "continueChat"
+    "relativePath": "/conversations/{conversationId}",
+    "operationId": "continueChat",
+    "group": "chat",
+    "summary": "向已有会话提交消息 / Submit a message to an existing conversation",
+    "description": "向已有会话提交消息 / Submit a message to an existing conversation 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "AiChatInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AiChatSubmission",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "DELETE",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}",
-    "operationId": "deleteConversation"
+    "relativePath": "/conversations/{conversationId}",
+    "operationId": "deleteConversation",
+    "group": "conversations",
+    "summary": "删除会话 / Delete a conversation",
+    "description": "删除会话 / Delete a conversation 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": null,
+      "schema": null,
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/stream",
-    "operationId": "streamChatEvents"
+    "relativePath": "/conversations/{conversationId}/stream",
+    "operationId": "streamChatEvents",
+    "group": "chat",
+    "summary": "订阅消息事件流 / Stream message events",
+    "description": "订阅消息事件流 / Stream message events 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "X-Request-ID",
+        "in": "header",
+        "required": false,
+        "description": "可选诊断请求 ID，便于关联客户端与服务端日志。 / Optional diagnostic request ID used to correlate client and server logs.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "AiChatStreamInput",
+    "response": {
+      "status": "200",
+      "mediaType": "text/event-stream",
+      "schema": "AiChatBriefEvent",
+      "format": null
+    },
+    "sse": true
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/stream-probe",
-    "operationId": "probeEventStream"
+    "relativePath": "/stream-probe",
+    "operationId": "probeEventStream",
+    "group": "chat",
+    "summary": "探测 SSE 连接 / Probe the SSE connection",
+    "description": "探测 SSE 连接 / Probe the SSE connection 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "X-Request-ID",
+        "in": "header",
+        "required": false,
+        "description": "可选诊断请求 ID，便于关联客户端与服务端日志。 / Optional diagnostic request ID used to correlate client and server logs.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "ChatStreamProbeInput",
+    "response": {
+      "status": "200",
+      "mediaType": "text/event-stream",
+      "schema": "ChatStreamProbeEvent",
+      "format": null
+    },
+    "sse": true
   },
   {
     "method": "DELETE",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/interrupt",
-    "operationId": "interruptConversation"
+    "relativePath": "/conversations/{conversationId}/interrupt",
+    "operationId": "interruptConversation",
+    "group": "chat",
+    "summary": "中断会话执行 / Interrupt conversation execution",
+    "description": "中断会话执行 / Interrupt conversation execution 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": null,
+      "schema": null,
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/compact",
-    "operationId": "compactConversation"
+    "relativePath": "/conversations/{conversationId}/compact",
+    "operationId": "compactConversation",
+    "group": "chat",
+    "summary": "压缩会话上下文 / Compact conversation context",
+    "description": "压缩会话上下文 / Compact conversation context 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "force",
+        "in": "query",
+        "required": false,
+        "description": "是否忽略当前阈值并强制压缩。 / Whether to compact regardless of the current threshold.",
+        "schema": {
+          "type": "boolean",
+          "default": true
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "202",
+      "mediaType": null,
+      "schema": null,
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/context-usage",
-    "operationId": "getConversationContextUsage"
+    "relativePath": "/conversations/{conversationId}/context-usage",
+    "operationId": "getConversationContextUsage",
+    "group": "conversations",
+    "summary": "读取上下文占用 / Get context usage",
+    "description": "读取上下文占用 / Get context usage 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationContextUsage",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations",
-    "operationId": "listConversations"
+    "relativePath": "/conversations",
+    "operationId": "listConversations",
+    "group": "conversations",
+    "summary": "分页查询会话 / List conversations",
+    "description": "分页查询会话 / List conversations 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "current",
+        "in": "query",
+        "required": false,
+        "description": "从 0 开始的页码。 / Zero-based page index.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 1000,
+          "default": 30
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderBy",
+        "in": "query",
+        "required": false,
+        "description": "排序字段列表。 / Ordered list of sort fields.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderDirection",
+        "in": "query",
+        "required": false,
+        "description": "排序方向。 / Sort direction.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderNullHandling",
+        "in": "query",
+        "required": false,
+        "description": "空值排序策略。 / Null ordering strategy.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "NATIVE",
+            "NULLS_FIRST",
+            "NULLS_LAST"
+          ],
+          "default": "NATIVE"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "keyword",
+        "in": "query",
+        "required": false,
+        "description": "标题或正文检索关键字。 / Title or content search keyword.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "状态过滤条件。 / Status filter.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationSummaryList",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/active",
-    "operationId": "listActiveConversations"
+    "relativePath": "/conversations/active",
+    "operationId": "listActiveConversations",
+    "group": "conversations",
+    "summary": "查询活动会话 / List active conversations",
+    "description": "查询活动会话 / List active conversations 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationIds",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/unread",
-    "operationId": "listUnreadConversations"
+    "relativePath": "/conversations/unread",
+    "operationId": "listUnreadConversations",
+    "group": "conversations",
+    "summary": "查询未读会话 / List unread conversations",
+    "description": "查询未读会话 / List unread conversations 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationIds",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/activity/query",
-    "operationId": "queryConversationActivities"
+    "relativePath": "/conversations/activity/query",
+    "operationId": "queryConversationActivities",
+    "group": "conversations",
+    "summary": "批量查询会话活动 / Query conversation activities",
+    "description": "批量查询会话活动 / Query conversation activities 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "ConversationActivityBatchInput",
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationActivityList",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "PUT",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/read-receipt",
-    "operationId": "markConversationRead"
+    "relativePath": "/conversations/{conversationId}/read-receipt",
+    "operationId": "markConversationRead",
+    "group": "conversations",
+    "summary": "推进会话已读游标 / Mark a conversation as read",
+    "description": "推进会话已读游标 / Mark a conversation as read 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "ConversationReadReceiptInput",
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationReadReceipt",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/stats",
-    "operationId": "getConversationStats"
+    "relativePath": "/conversations/stats",
+    "operationId": "getConversationStats",
+    "group": "conversations",
+    "summary": "读取会话统计 / Get conversation statistics",
+    "description": "读取会话统计 / Get conversation statistics 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationStats",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/title",
-    "operationId": "getConversationTitle"
+    "relativePath": "/conversations/{conversationId}/title",
+    "operationId": "getConversationTitle",
+    "group": "conversations",
+    "summary": "读取会话标题 / Get conversation title",
+    "description": "读取会话标题 / Get conversation title 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationTitle",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "PATCH",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/title",
-    "operationId": "updateConversationTitle"
+    "relativePath": "/conversations/{conversationId}/title",
+    "operationId": "updateConversationTitle",
+    "group": "conversations",
+    "summary": "更新会话标题 / Update conversation title",
+    "description": "更新会话标题 / Update conversation title 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "ConversationTitleInput",
+    "response": {
+      "status": "202",
+      "mediaType": null,
+      "schema": null,
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "PATCH",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/status",
-    "operationId": "updateConversationStatus"
+    "relativePath": "/conversations/{conversationId}/status",
+    "operationId": "updateConversationStatus",
+    "group": "conversations",
+    "summary": "更新会话状态 / Update conversation status",
+    "description": "更新会话状态 / Update conversation status 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "ConversationStatusInput",
+    "response": {
+      "status": "202",
+      "mediaType": null,
+      "schema": null,
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}",
-    "operationId": "getSqlQueryResult"
+    "relativePath": "/conversations/{conversationId}/sql-query-results/{resultId}",
+    "operationId": "getSqlQueryResult",
+    "group": "sql",
+    "summary": "分页读取 SQL 结果 / Get paged SQL results",
+    "description": "分页读取 SQL 结果 / Get paged SQL results 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "resultId",
+        "in": "path",
+        "required": true,
+        "description": "SQL 查询结果 ID。 / SQL query-result ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "current",
+        "in": "query",
+        "required": false,
+        "description": "从 0 开始的页码。 / Zero-based page index.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "SqlQueryResultPage",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}/chart-data",
-    "operationId": "getSqlQueryChartData"
+    "relativePath": "/conversations/{conversationId}/sql-query-results/{resultId}/chart-data",
+    "operationId": "getSqlQueryChartData",
+    "group": "sql",
+    "summary": "读取 SQL 图表数据 / Get SQL chart data",
+    "description": "读取 SQL 图表数据 / Get SQL chart data 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "resultId",
+        "in": "path",
+        "required": true,
+        "description": "SQL 查询结果 ID。 / SQL query-result ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "SqlChartDataset",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/sql-query-results/{resultId}/export",
-    "operationId": "exportSqlQueryResult"
+    "relativePath": "/conversations/{conversationId}/sql-query-results/{resultId}/export",
+    "operationId": "exportSqlQueryResult",
+    "group": "sql",
+    "summary": "导出 SQL 结果 / Export SQL results",
+    "description": "导出 SQL 结果 / Export SQL results 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "resultId",
+        "in": "path",
+        "required": true,
+        "description": "SQL 查询结果 ID。 / SQL query-result ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "format",
+        "in": "query",
+        "required": true,
+        "description": "导出格式。 / Export format.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "CSV",
+            "XLSX"
+          ]
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "Accept",
+        "in": "header",
+        "required": false,
+        "description": "期望的导出媒体类型。 / Requested export media type.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "text/csv",
+      "schema": null,
+      "format": "binary"
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages",
-    "operationId": "listConversationMessages"
+    "relativePath": "/conversations/{conversationId}/messages",
+    "operationId": "listConversationMessages",
+    "group": "messages",
+    "summary": "分页查询会话消息 / List conversation messages",
+    "description": "分页查询会话消息 / List conversation messages 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "current",
+        "in": "query",
+        "required": false,
+        "description": "从 0 开始的页码。 / Zero-based page index.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 1000,
+          "default": 30
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderBy",
+        "in": "query",
+        "required": false,
+        "description": "排序字段列表。 / Ordered list of sort fields.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderDirection",
+        "in": "query",
+        "required": false,
+        "description": "排序方向。 / Sort direction.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderNullHandling",
+        "in": "query",
+        "required": false,
+        "description": "空值排序策略。 / Null ordering strategy.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "NATIVE",
+            "NULLS_FIRST",
+            "NULLS_LAST"
+          ],
+          "default": "NATIVE"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "keyword",
+        "in": "query",
+        "required": false,
+        "description": "标题或正文检索关键字。 / Title or content search keyword.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationMessagePage",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}",
-    "operationId": "getConversationMessage"
+    "relativePath": "/conversations/{conversationId}/messages/{messageId}",
+    "operationId": "getConversationMessage",
+    "group": "messages",
+    "summary": "读取单条会话消息 / Get a conversation message",
+    "description": "读取单条会话消息 / Get a conversation message 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "description": "用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationMessage",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks",
-    "operationId": "listConversationAsyncTasks"
+    "relativePath": "/conversations/{conversationId}/async-tasks",
+    "operationId": "listConversationAsyncTasks",
+    "group": "messages",
+    "summary": "分页查询异步任务 / List asynchronous tasks",
+    "description": "分页查询异步任务 / List asynchronous tasks 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "current",
+        "in": "query",
+        "required": false,
+        "description": "从 0 开始的页码。 / Zero-based page index.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 1000,
+          "default": 30
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderBy",
+        "in": "query",
+        "required": false,
+        "description": "排序字段列表。 / Ordered list of sort fields.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderDirection",
+        "in": "query",
+        "required": false,
+        "description": "排序方向。 / Sort direction.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderNullHandling",
+        "in": "query",
+        "required": false,
+        "description": "空值排序策略。 / Null ordering strategy.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "NATIVE",
+            "NULLS_FIRST",
+            "NULLS_LAST"
+          ],
+          "default": "NATIVE"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "keyword",
+        "in": "query",
+        "required": false,
+        "description": "标题或正文检索关键字。 / Title or content search keyword.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "状态过滤条件。 / Status filter.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AsyncTaskPage",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/{asyncTaskId}",
-    "operationId": "getConversationAsyncTask"
+    "relativePath": "/conversations/{conversationId}/async-tasks/{asyncTaskId}",
+    "operationId": "getConversationAsyncTask",
+    "group": "messages",
+    "summary": "读取异步任务 / Get an asynchronous task",
+    "description": "读取异步任务 / Get an asynchronous task 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "asyncTaskId",
+        "in": "path",
+        "required": true,
+        "description": "异步任务 ID。 / Asynchronous task ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AsyncTask",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "DELETE",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/queue",
-    "operationId": "cancelQueuedMessage"
+    "relativePath": "/conversations/{conversationId}/messages/{messageId}/queue",
+    "operationId": "cancelQueuedMessage",
+    "group": "messages",
+    "summary": "取消排队消息 / Cancel a queued message",
+    "description": "取消排队消息 / Cancel a queued message 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "description": "用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationMessage",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/events",
-    "operationId": "getChatEvents"
+    "relativePath": "/events",
+    "operationId": "getChatEvents",
+    "group": "events",
+    "summary": "读取消息事件 / Get message events",
+    "description": "读取消息事件 / Get message events 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "query",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "messageId",
+        "in": "query",
+        "required": true,
+        "description": "用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AiChatBriefEventList",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/events/batch",
-    "operationId": "getChatEventsBatch"
+    "relativePath": "/events/batch",
+    "operationId": "getChatEventsBatch",
+    "group": "events",
+    "summary": "批量读取消息事件 / Get message events in batch",
+    "description": "批量读取消息事件 / Get message events in batch 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "AiChatEventsBatchInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AiChatEventsBatch",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares",
-    "operationId": "listConversationShares"
+    "relativePath": "/conversations/{conversationId}/shares",
+    "operationId": "listConversationShares",
+    "group": "conversations",
+    "summary": "查询会话分享 / List conversation shares",
+    "description": "查询会话分享 / List conversation shares 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationShareList",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares",
-    "operationId": "createConversationShare"
+    "relativePath": "/conversations/{conversationId}/shares",
+    "operationId": "createConversationShare",
+    "group": "conversations",
+    "summary": "创建会话分享 / Create a conversation share",
+    "description": "创建会话分享 / Create a conversation share 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "ConversationShareInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "ConversationShareCreated",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "DELETE",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares/{shareId}",
-    "operationId": "revokeConversationShare"
+    "relativePath": "/conversations/{conversationId}/shares/{shareId}",
+    "operationId": "revokeConversationShare",
+    "group": "conversations",
+    "summary": "撤销会话分享 / Revoke a conversation share",
+    "description": "撤销会话分享 / Revoke a conversation share 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "shareId",
+        "in": "path",
+        "required": true,
+        "description": "会话分享记录 ID。 / Conversation-share record ID.",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationShareRevoked",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/plan/approve",
-    "operationId": "approvePlan"
+    "relativePath": "/plan/approve",
+    "operationId": "approvePlan",
+    "group": "interactions",
+    "summary": "提交计划审批 / Submit plan approval",
+    "description": "提交计划审批 / Submit plan approval 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "PlanApprovalInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "OperationResult",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/plan/{planId}/status",
-    "operationId": "getPlanStatus"
+    "relativePath": "/plan/{planId}/status",
+    "operationId": "getPlanStatus",
+    "group": "interactions",
+    "summary": "查询计划审批状态 / Get plan approval status",
+    "description": "查询计划审批状态 / Get plan approval status 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "planId",
+        "in": "path",
+        "required": true,
+        "description": "等待审批的计划 ID。 / Pending plan-approval ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "PlanStatus",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/user-input/{questionId}/status",
-    "operationId": "getUserInputStatus"
+    "relativePath": "/user-input/{questionId}/status",
+    "operationId": "getUserInputStatus",
+    "group": "interactions",
+    "summary": "查询用户问答状态 / Get user-input status",
+    "description": "查询用户问答状态 / Get user-input status 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "questionId",
+        "in": "path",
+        "required": true,
+        "description": "等待回答的问题 ID。 / Pending question ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "conversationId",
+        "in": "query",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "messageId",
+        "in": "query",
+        "required": true,
+        "description": "用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "UserInputStatus",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/user-input/answer",
-    "operationId": "answerUserInput"
+    "relativePath": "/user-input/answer",
+    "operationId": "answerUserInput",
+    "group": "interactions",
+    "summary": "提交用户回答 / Submit a user answer",
+    "description": "提交用户回答 / Submit a user answer 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "UserInputAnswerInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "OperationResult",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/pre-signed-url/write",
-    "operationId": "createPreSignedUpload"
+    "relativePath": "/files/pre-signed-url/write",
+    "operationId": "createPreSignedUpload",
+    "group": "files",
+    "summary": "创建预签名上传地址 / Create a presigned upload URL",
+    "description": "创建预签名上传地址 / Create a presigned upload URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "GeneratePreSignedUrlInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "GeneratePreSignedUrlOutput",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/pre-signed-url/confirm",
-    "operationId": "confirmPreSignedUpload"
+    "relativePath": "/files/pre-signed-url/confirm",
+    "operationId": "confirmPreSignedUpload",
+    "group": "files",
+    "summary": "确认预签名上传 / Confirm a presigned upload",
+    "description": "确认预签名上传 / Confirm a presigned upload 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "ConfirmUploadInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AgentFile",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/contentMd5",
-    "operationId": "createFileByContentMd5"
+    "relativePath": "/files/contentMd5",
+    "operationId": "createFileByContentMd5",
+    "group": "files",
+    "summary": "按 MD5 复用文件 / Reuse a file by MD5",
+    "description": "按 MD5 复用文件 / Reuse a file by MD5 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "CreateFileInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AgentFile",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/files/meta/contentMd5",
-    "operationId": "fileExistsByContentMd5"
+    "relativePath": "/files/meta/contentMd5",
+    "operationId": "fileExistsByContentMd5",
+    "group": "files",
+    "summary": "检查 MD5 文件是否存在 / Check file existence by MD5",
+    "description": "检查 MD5 文件是否存在 / Check file existence by MD5 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "contentMd5",
+        "in": "query",
+        "required": true,
+        "description": "文件内容 MD5。 / MD5 digest of the file content.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "FileExists",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/files/{fileId}/preview",
-    "operationId": "getConversationFilePreview"
+    "relativePath": "/conversations/{conversationId}/files/{fileId}/preview",
+    "operationId": "getConversationFilePreview",
+    "group": "files",
+    "summary": "创建会话文件预览地址 / Create a conversation file preview URL",
+    "description": "创建会话文件预览地址 / Create a conversation file preview URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "fileId",
+        "in": "path",
+        "required": true,
+        "description": "文件记录 ID。 / File record ID.",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "PreSignedReadUrl",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/plan-intermediate-files/{fileId}/preview",
-    "operationId": "getPlanIntermediateFilePreview"
+    "relativePath": "/conversations/{conversationId}/messages/{messageId}/plan-intermediate-files/{fileId}/preview",
+    "operationId": "getPlanIntermediateFilePreview",
+    "group": "files",
+    "summary": "创建计划快照预览地址 / Create a plan snapshot preview URL",
+    "description": "创建计划快照预览地址 / Create a plan snapshot preview URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "description": "用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "fileId",
+        "in": "path",
+        "required": true,
+        "description": "文件记录 ID。 / File record ID.",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "PreSignedReadUrl",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/knowledge-bases/citations/metadata",
-    "operationId": "getCitationMetadataBatch"
+    "relativePath": "/knowledge-bases/citations/metadata",
+    "operationId": "getCitationMetadataBatch",
+    "group": "knowledge",
+    "summary": "批量读取引用元数据 / Get citation metadata in batch",
+    "description": "批量读取引用元数据 / Get citation metadata in batch 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "ReturnedReferenceList",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "CitationMetadataList",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/knowledge-bases/citations/{citationType}/{referenceId}/metadata",
-    "operationId": "getCitationMetadata"
+    "relativePath": "/knowledge-bases/citations/{citationType}/{referenceId}/metadata",
+    "operationId": "getCitationMetadata",
+    "group": "knowledge",
+    "summary": "读取引用元数据 / Get citation metadata",
+    "description": "读取引用元数据 / Get citation metadata 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "citationType",
+        "in": "path",
+        "required": true,
+        "description": "知识引用类型。 / Knowledge citation type.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "referenceId",
+        "in": "path",
+        "required": true,
+        "description": "知识引用记录 ID。 / Knowledge-reference record ID.",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "CitationMetadata",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/workspace/files",
-    "operationId": "listWorkspaceArtifacts"
+    "relativePath": "/conversations/{conversationId}/workspace/files",
+    "operationId": "listWorkspaceArtifacts",
+    "group": "workspace",
+    "summary": "分页查询工作区制品 / List workspace artifacts",
+    "description": "分页查询工作区制品 / List workspace artifacts 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "current",
+        "in": "query",
+        "required": false,
+        "description": "从 0 开始的页码。 / Zero-based page index.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 1000,
+          "default": 30
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderBy",
+        "in": "query",
+        "required": false,
+        "description": "排序字段列表。 / Ordered list of sort fields.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderDirection",
+        "in": "query",
+        "required": false,
+        "description": "排序方向。 / Sort direction.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderNullHandling",
+        "in": "query",
+        "required": false,
+        "description": "空值排序策略。 / Null ordering strategy.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "NATIVE",
+            "NULLS_FIRST",
+            "NULLS_LAST"
+          ],
+          "default": "NATIVE"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "keyword",
+        "in": "query",
+        "required": false,
+        "description": "标题或正文检索关键字。 / Title or content search keyword.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "prefix",
+        "in": "query",
+        "required": false,
+        "description": "工作区相对路径前缀。 / Workspace-relative path prefix.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "WorkspaceArtifactList",
+      "format": null
+    },
+    "sse": false
   },
   {
     "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/workspace/files/preview",
-    "operationId": "getWorkspaceFilePreview"
+    "relativePath": "/conversations/{conversationId}/workspace/files/preview",
+    "operationId": "getWorkspaceFilePreview",
+    "group": "workspace",
+    "summary": "创建工作区文件预览地址 / Create a workspace file preview URL",
+    "description": "创建工作区文件预览地址 / Create a workspace file preview URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "path",
+        "in": "query",
+        "required": true,
+        "description": "工作区相对文件路径。 / Workspace-relative file path.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "PreSignedReadUrl",
+      "format": null
+    },
+    "sse": false
   }
 ]

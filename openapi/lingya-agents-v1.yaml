@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Lingya Agents OpenAPI
-  version: 0.1.2
+  version: 0.1.3
   description: Public, tenant-scoped Agent channel API authenticated with OPENAPI-HMAC-SHA256-V1. Studio administration endpoints are not part of this contract.
   license:
     name: MIT
@@ -53,6 +53,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "200":
@@ -89,6 +90,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -132,6 +134,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -175,6 +178,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -224,6 +228,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -263,6 +268,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -321,6 +327,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: X-Request-ID
           in: header
@@ -372,6 +379,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -411,6 +419,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -457,6 +466,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -500,6 +510,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - &a1
           name: current
@@ -601,6 +612,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "200":
@@ -637,6 +649,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "200":
@@ -673,6 +686,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "200":
@@ -716,6 +730,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -766,6 +781,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "200":
@@ -802,6 +818,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -844,6 +861,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -890,6 +908,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -936,6 +955,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1003,6 +1023,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1053,6 +1074,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1127,6 +1149,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1176,6 +1199,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1226,6 +1250,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1283,6 +1308,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1333,6 +1359,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1383,6 +1410,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: query
@@ -1431,6 +1459,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -1474,6 +1503,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1516,6 +1546,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1566,6 +1597,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -1616,6 +1648,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -1659,6 +1692,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: planId
           in: path
@@ -1702,6 +1736,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: questionId
           in: path
@@ -1757,6 +1792,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -1800,6 +1836,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -1843,6 +1880,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -1886,6 +1924,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -1929,6 +1968,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: contentMd5
           in: query
@@ -1971,6 +2011,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -2021,6 +2062,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -2078,6 +2120,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
       responses:
         "201":
@@ -2121,6 +2164,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: citationType
           in: path
@@ -2171,6 +2215,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
@@ -2226,6 +2271,7 @@ paths:
           schema:
             type: string
             minLength: 1
+          x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
         - name: conversationId
           in: path
