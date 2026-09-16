@@ -1,6 +1,7 @@
-import { createHash, createHmac } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import YAML from "yaml";
+import { groupGuides, operationGuides, formatOperationDescription } from "./documentation-data.mjs";
+import { createCanonicalRequest, signCanonicalRequest } from "./hmac.mjs";
 
 const root = new URL("../", import.meta.url);
 const contractDir = new URL("openapi/", root);
@@ -785,12 +786,25 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Lingya Agents OpenAPI",
-    version: "0.1.3",
-    description: "Public, tenant-scoped Agent channel API authenticated with OPENAPI-HMAC-SHA256-V1. Studio administration endpoints are not part of this contract.",
+    version: "0.1.4",
+    description: [
+      "本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，使用 OPENAPI-HMAC-SHA256-V1 验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。",
+      "This contract describes the public Lingya Agents channel API for trusted servers. Requests use OPENAPI-HMAC-SHA256-V1, and Studio administration endpoints are excluded. The online reference only displays requests and never collects or stores a secret in the browser.",
+      "## 快速开始 / Quick start",
+      "1. 读取 Configuration，确认模型和附件限制。 / Read Configuration to discover model and attachment limits.",
+      "2. 在本地固定最终 method、raw path、raw query、Content-Type 和 body 字节，再生成签名。 / Finalize method, raw path, raw query, Content-Type, and body bytes locally before signing.",
+      "3. 按业务分组调用接口；SSE 断开后使用 Events 补取。 / Call the appropriate business group and use Events for recovery after an SSE disconnect.",
+      "## 公共错误 / Common errors",
+      "`401` 签名、时间戳或 nonce 无效；`403` 资源不属于当前渠道用户；`413` 请求体过大；`422` 参数校验失败；`429` 请求过于频繁；`500` 服务内部错误；`503` 依赖或执行服务暂不可用。",
+      "`401` invalid signature, timestamp, or nonce; `403` resource not owned by the current channel user; `413` request body too large; `422` validation failed; `429` rate limited; `500` internal error; `503` dependency or execution service unavailable.",
+    ].join("\n\n"),
     license: { name: "MIT", identifier: "MIT" },
   },
-  servers: [{ url: "https://{tenantHost}", variables: { tenantHost: { default: "tenant.example.com", description: "Tenant host routed by the Lingya gateway." } } }],
-  tags: ["Configuration", "Chat", "Conversations", "Messages", "Events", "Interactions", "Files", "Knowledge", "Workspace", "SQL"].map((name) => ({ name, description: `${name} operations exposed to signed OpenAPI clients.` })),
+  servers: [{ url: "https://{tenantHost}", variables: { tenantHost: { default: "lingtong.lingya.tech", description: "灵涯网关路由的租户域名。 / Tenant host routed by the Lingya gateway." } } }],
+  tags: ["Configuration", "Chat", "Conversations", "Messages", "Events", "Interactions", "Files", "Knowledge", "Workspace", "SQL"].map((name) => ({
+    name,
+    description: `${groupGuides[name].zh}\n\n${groupGuides[name].en}`,
+  })),
   security: [{ OpenApiAccessKey: [], OpenApiTimestamp: [], OpenApiNonce: [], OpenApiUser: [], OpenApiSignature: [] }],
   paths: {},
   components: {
@@ -802,8 +816,28 @@ const spec = {
       OpenApiSignature: { type: "apiKey", in: "header", name: "X-OpenAPI-Signature", description: "Lowercase hexadecimal HMAC-SHA256 signature. The secret is never sent." },
     },
     responses: {
-      Error: jsonResponse("API error", ref("CodeMessage")),
-      ValidationError: jsonResponse("Validation error", ref("ValidationError")),
+      Error: {
+        ...jsonResponse("接口错误。 / API error.", ref("CodeMessage")),
+        content: {
+          "application/json": {
+            schema: ref("CodeMessage"),
+            example: { code: "OPENAPI_UNAUTHORIZED", message: "Request authentication failed" },
+          },
+        },
+      },
+      ValidationError: {
+        ...jsonResponse("参数校验错误。 / Validation error.", ref("ValidationError")),
+        content: {
+          "application/json": {
+            schema: ref("ValidationError"),
+            example: {
+              code: "VALIDATION_ERROR",
+              message: "Request validation failed",
+              fields: [{ field: "query", message: "must not be blank" }],
+            },
+          },
+        },
+      },
     },
     schemas,
   },
@@ -994,6 +1028,147 @@ const fieldLabels = {
   url: "预签名 URL / presigned URL", support: "当前存储是否支持该操作 / whether the storage supports this operation",
 };
 
+const exampleValues = {
+  accessMode: "READ_ONLY", action: "execute", activeMessageId: "message-demo-001", asyncTaskId: "task-demo-001",
+  category: "task-progress", chatOrder: 1, citationType: "KNOWLEDGE_BASE", code: "SUCCESS", contentMd5: "1B2M2Y8AsgTpgAmY7PhCfg==",
+  conversationId: "conversation-demo-001", customInput: "Please use the approved scope.", description: "Example generated artifact",
+  disposition: "queued", executionEpoch: "1", executionStatus: "RUNNING", externalUserId: "external-user-demo", feedback: "Approved",
+  fileId: 1001, fileName: "quarterly-report.pdf", fileUk: "temporary-file-key", keyGroupId: 42, keyGroupName: "Example models",
+  kind: "FILE", lastChatModelSpec: null, level: "warning", maker: "OPENAI", maxAttachmentCount: 10, message: "Example response",
+  messageId: "message-demo-001", mimeType: "application/pdf", model: "example-model", modelDescription: "Example model used for integration",
+  modelLabel: "Example model", modelName: "example-model", module: "ai-chat-attachments", nonce: "bm9uY2UtZm9yLWRvY3M",
+  password: "123456", path: "reports/quarterly-report.pdf", planId: "plan-demo-001", prefix: "reports/", probeId: "probe-demo-001",
+  publishId: "publish-demo-001", query: "Summarize the quarterly report", question: "Should the plan continue?", questionDetails: "Review the proposed steps.",
+  questionId: "question-demo-001", rawJson: "{}", referenceId: 1001, resultId: "sql-result-demo-001", serverName: "lingtong.lingya.tech",
+  shareCode: "share-demo-code", shareId: 1001, status: "COMPLETED", summary: "Example summary", title: "Quarterly report summary",
+  toolCallId: "tool-call-demo-001", toolName: "example-tool", type: "message", url: "https://objects.example.com/preview/example",
+  warning: "Context usage is approaching the configured limit.",
+};
+
+const parameterExamples = {
+  channelId: "11111111-2222-4333-8444-555555555555", conversationId: "conversation-demo-001", messageId: "message-demo-001",
+  asyncTaskId: "task-demo-001", resultId: "sql-result-demo-001", shareId: 1001, planId: "plan-demo-001", questionId: "question-demo-001",
+  fileId: 1001, referenceId: 1001, citationType: "KNOWLEDGE_BASE", current: 0, size: 30, orderBy: ["lastUpdateTime"],
+  orderDirection: "DESC", orderNullHandling: "NATIVE", keyword: "quarterly", status: "COMPLETED", force: true, format: "CSV",
+  Accept: "text/csv", contentMd5: "1B2M2Y8AsgTpgAmY7PhCfg==", prefix: "reports/", path: "reports/quarterly-report.pdf",
+  "X-Request-ID": "request-demo-001",
+};
+
+function mergeExamples(left, right) {
+  if (left && right && typeof left === "object" && typeof right === "object" && !Array.isArray(left) && !Array.isArray(right)) {
+    return { ...left, ...right };
+  }
+  return right ?? left;
+}
+
+function schemaExample(schema, propertyName, seen = new Set()) {
+  if (!schema || typeof schema !== "object") return null;
+  if (schema.example !== undefined) return schema.example;
+  if (schema.const !== undefined) return schema.const;
+  if (schema.default !== undefined) return schema.default;
+  if (schema.enum?.length) return schema.enum[0];
+  if (schema.$ref) {
+    const name = schema.$ref.split("/").at(-1);
+    if (seen.has(name)) return null;
+    return schemaExample(schemas[name], propertyName, new Set([...seen, name]));
+  }
+  if (schema.oneOf) {
+    const branch = schema.oneOf.find((candidate) => candidate.type !== "null") ?? schema.oneOf[0];
+    return schemaExample(branch, propertyName, seen);
+  }
+  if (schema.allOf) return schema.allOf.map((part) => schemaExample(part, propertyName, seen)).reduce(mergeExamples, {});
+  const type = Array.isArray(schema.type) ? schema.type.find((candidate) => candidate !== "null") : schema.type;
+  if (type === "object" || schema.properties) {
+    return Object.fromEntries(Object.entries(schema.properties ?? {}).map(([name, child]) => [name, schemaExample(child, name, seen)]));
+  }
+  if (type === "array") return [schemaExample(schema.items, propertyName, seen)];
+  if (propertyName in exampleValues) return exampleValues[propertyName];
+  if (type === "integer" || type === "number") return schema.minimum ?? 1;
+  if (type === "boolean") return true;
+  if (schema.format === "date-time") return "2026-01-15T08:00:00Z";
+  if (schema.format === "date") return "2026-01-15";
+  if (schema.format === "time") return "08:00:00";
+  if (schema.format === "uri") return "https://objects.example.com/preview/example";
+  if (schema.format === "uuid") return "11111111-2222-4333-8444-555555555555";
+  return "example";
+}
+
+function encodeQueryValue(value) {
+  return encodeURIComponent(String(value));
+}
+
+function buildOperationExample(path, method, operation) {
+  for (const parameter of operation.parameters) {
+    const value = parameterExamples[parameter.name] ?? schemaExample(parameter.schema, parameter.name);
+    parameter.example = parameter.schema?.type === "array" && !Array.isArray(value) ? [value] : value;
+  }
+  const rawPath = path.replaceAll(/\{([^}]+)\}/g, (_, name) => encodeURIComponent(String(parameterExamples[name] ?? name)));
+  const queryParts = operation.parameters.filter((parameter) => parameter.in === "query").flatMap((parameter) => {
+    const value = parameter.example;
+    return (Array.isArray(value) ? value : [value]).map((item) => `${encodeURIComponent(parameter.name)}=${encodeQueryValue(item)}`);
+  });
+  const rawQuery = queryParts.join("&");
+  const requestMedia = operation.requestBody?.content?.["application/json"];
+  const requestBody = requestMedia ? schemaExample(requestMedia.schema) : null;
+  if (requestMedia) requestMedia.example = requestBody;
+  const bodyText = requestBody === null ? "" : JSON.stringify(requestBody, null, 2);
+  const contentType = requestMedia ? "application/json" : "";
+  const requestTarget = `${rawPath}${rawQuery ? `?${rawQuery}` : ""}`;
+  const accept = operation.parameters.find((parameter) => parameter.in === "header" && parameter.name === "Accept")?.example;
+  const rawHeaders = [
+    "Host: lingtong.lingya.tech",
+    "X-OpenAPI-AK: <access-key>",
+    "X-OpenAPI-Timestamp: <unix-seconds>",
+    "X-OpenAPI-Nonce: <base64url-nonce>",
+    "X-OpenAPI-User: <base64url-external-user>",
+    "X-OpenAPI-Signature: <lowercase-hex-signature>",
+    ...(contentType ? [`Content-Type: ${contentType}`] : []),
+    ...(accept ? [`Accept: ${accept}`] : []),
+  ];
+  const rawHttp = [`${method.toUpperCase()} ${requestTarget} HTTP/1.1`, ...rawHeaders, ...(bodyText ? ["", bodyText] : [])].join("\n");
+  const curlPath = path.replace("{channelId}", "${CHANNEL_ID}").replaceAll(/\{([^}]+)\}/g, (_, name) => encodeURIComponent(String(parameterExamples[name] ?? name)));
+  const shellBody = bodyText ? `BODY=$(cat <<'JSON'\n${bodyText}\nJSON\n)\n` : "";
+  const signBody = bodyText ? ` --content-type ${contentType} --body "$BODY"` : "";
+  const curlBody = bodyText ? " \\\n+  -H \"Content-Type: application/json\" \\\n+  --data-binary \"$BODY\"" : "";
+  const curlAccept = accept ? ` \\\n+  -H \"Accept: ${accept}\"` : "";
+  const curlMode = operation["x-sse"] ? " \\\n+  --no-buffer" : Object.values(operation.responses).some((response) => response.content?.["text/csv"]) ? " \\\n+  --output response.bin" : "";
+  const curl = `BASE_URL="${"${BASE_URL:-https://lingtong.lingya.tech}"}"
+CHANNEL_ID="${"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"}"
+EXTERNAL_USER_ID="${"${EXTERNAL_USER_ID:-external-user-demo}"}"
+RAW_PATH="${curlPath}"
+RAW_QUERY="${rawQuery}"
+${shellBody}eval "$(node scripts/sign-request.mjs --method ${method.toUpperCase()} --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID"${signBody} --format shell)"
+
+curl --request ${method.toUpperCase()} "${"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}"}" \\
+  -H "X-OpenAPI-AK: ${"${X_OPENAPI_AK}"}" \\
+  -H "X-OpenAPI-Timestamp: ${"${X_OPENAPI_TIMESTAMP}"}" \\
+  -H "X-OpenAPI-Nonce: ${"${X_OPENAPI_NONCE}"}" \\
+  -H "X-OpenAPI-User: ${"${X_OPENAPI_USER}"}" \\
+  -H "X-OpenAPI-Signature: ${"${X_OPENAPI_SIGNATURE}"}"${curlAccept}${curlMode}${curlBody}`.replaceAll("\n+", "\n");
+  operation["x-codeSamples"] = [
+    { lang: "HTTP", label: "Raw HTTP", source: rawHttp },
+    { lang: "Shell", label: "cURL + local HMAC", source: curl },
+  ];
+  const success = Object.entries(operation.responses).find(([status]) => /^2\d\d$/.test(status));
+  const responseContent = success?.[1]?.content ?? {};
+  let responseExample = null;
+  for (const [mediaType, media] of Object.entries(responseContent)) {
+    if (media.schema?.format !== "binary") {
+      media.example = schemaExample(media.schema);
+      responseExample ??= media.example;
+    }
+    if (mediaType === "text/event-stream") media["x-sse-example"] = "test-vectors/sse-v1.txt";
+  }
+  return {
+    operationId: operation.operationId,
+    group: operation.tags[0],
+    method: method.toUpperCase(),
+    path,
+    request: { rawPath, rawQuery, contentType, body: requestBody, rawHttp, curl },
+    response: { status: success?.[0] ?? null, mediaTypes: Object.keys(responseContent), body: responseExample },
+  };
+}
+
 const words = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]/g, " ").toLowerCase();
 const describeField = (name) => `${fieldLabels[name] ?? `字段 ${name} / ${words(name)} field`}。`;
 const walkSchema = (node, propertyName) => {
@@ -1008,15 +1183,19 @@ for (const [name, schema] of Object.entries(schemas)) {
   schema.description ??= `${name} 的公开协议结构。 / Public contract for ${words(name)}.`;
   walkSchema(schema);
 }
+const httpExamples = [];
 for (const [path, item] of Object.entries(spec.paths)) {
   for (const [method, operation] of Object.entries(item)) {
     operation.summary = operationSummaries[operation.operationId];
-    operation.description = `${operation.summary} 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.`;
+    const guide = operationGuides[operation.operationId];
+    if (!guide) throw new Error(`Missing operation documentation for ${operation.operationId}`);
+    operation.description = formatOperationDescription(operation.summary, guide);
     for (const parameter of operation.parameters) parameter.description = parameterDescriptions[parameter.name] ?? parameter.description ?? describeField(parameter.name);
     if (operation.requestBody) operation.requestBody.description = `${operation.summary} 的 JSON 请求参数。 / JSON request parameters for ${operation.operationId}.`;
     for (const response of Object.values(operation.responses)) {
       if (response.description === "Successful response") response.description = `${operation.summary} 的成功响应。 / Successful response for ${operation.operationId}.`;
     }
+    httpExamples.push(buildOperationExample(path, method, operation));
   }
 }
 
@@ -1058,14 +1237,29 @@ const endpointManifest = Object.entries(spec.paths).flatMap(([path, item]) =>
   }),
 );
 await writeFile(new URL("endpoints.json", contractDir), `${JSON.stringify(endpointManifest, null, 2)}\n`, "utf8");
+await writeFile(new URL("examples/http-requests.json", root), `${JSON.stringify({
+  version: spec.info.version,
+  baseUrl: "https://lingtong.lingya.tech",
+  warning: "Use credentials only on a trusted server. Never expose OPENAPI_SK in a browser or untrusted client.",
+  operations: httpExamples,
+}, null, 2)}\n`, "utf8");
 
 const vectorsUrl = new URL("test-vectors/hmac-v1.json", root);
 const vectors = JSON.parse(await readFile(vectorsUrl, "utf8"));
 for (const item of vectors.cases) {
   const bodyBytes = Buffer.from(item.bodyBase64, "base64url");
-  const bodyHash = createHash("sha256").update(bodyBytes).digest("hex");
-  const fields = [vectors.version, item.accessKey, item.timestamp, item.nonce, item.method, item.rawPath, item.rawQuery, item.encodedUser, item.contentType, bodyHash];
-  item.canonical = fields.join("\n");
-  item.signature = createHmac("sha256", item.secret).update(item.canonical, "utf8").digest("hex");
+  item.canonical = createCanonicalRequest({
+    version: vectors.version,
+    accessKey: item.accessKey,
+    timestamp: item.timestamp,
+    nonce: item.nonce,
+    method: item.method,
+    rawPath: item.rawPath,
+    rawQuery: item.rawQuery,
+    encodedUser: item.encodedUser,
+    contentType: item.contentType,
+    bodyBytes,
+  });
+  item.signature = signCanonicalRequest(item.secret, item.canonical);
 }
 await writeFile(vectorsUrl, `${JSON.stringify(vectors, null, 2)}\n`, "utf8");

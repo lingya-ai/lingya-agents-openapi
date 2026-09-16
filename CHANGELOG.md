@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 - 2026-09-16
+
+- Add bilingual use-case guides for all ten API groups and structured guidance for all 46 operations.
+- Add validated Raw HTTP, cURL, request, and success-response examples for every operation.
+- Add a golden-vector-backed local HMAC signing tool and self-contained ReDoc HTML without remote runtime assets.
+- Publish the generated reference through GitHub Pages and attach the complete example manifest to releases.
+
 ## 0.1.3
 
 - Mark `channelId` as a client-bound SDK parameter without changing the HTTP contract.

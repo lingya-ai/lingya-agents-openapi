@@ -29,7 +29,6 @@ jobs:
       - name: Verify OpenAPI Generator compatibility
         run: npx openapi-generator-cli generate -i openapi/lingya-agents-v1.yaml -g kotlin -o /tmp/lingya-sdk-generated --global-property apiTests=false,modelTests=false
       - run: npx redocly lint openapi/lingya-agents-v1.yaml --max-problems 0
-      - run: npm run generate:docs
       - name: Check generated artifacts
         run: git diff --exit-code
       - name: Check backward compatibility

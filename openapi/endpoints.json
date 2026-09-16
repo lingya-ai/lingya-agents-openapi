@@ -6,7 +6,7 @@
     "operationId": "getAgentsConfig",
     "group": "configuration",
     "summary": "读取 Agent 配置 / Get Agent configuration",
-    "description": "读取 Agent 配置 / Get Agent configuration 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n在初始化客户端能力或展示模型选择器前读取渠道配置。\n\n### Use case\nRead channel configuration before initializing client capabilities or showing model choices.\n\n### 前置条件\n仅需有效渠道凭证。\n\n### Prerequisites\nOnly valid channel credentials are required.\n\n### 行为与副作用\n只读，不修改配置。\n\n### Behavior and side effects\nRead-only; no configuration is changed.\n\n### 后续调用\n按附件限制准备文件，或创建会话。\n\n### Next step\nPrepare files according to the limits or create a conversation.\n\n### 接口摘要\n读取 Agent 配置 / Get Agent configuration\n\n### Operation summary\n读取 Agent 配置 / Get Agent configuration",
     "parameters": [
       {
         "name": "channelId",
@@ -36,7 +36,7 @@
     "operationId": "getConversationConfig",
     "group": "configuration",
     "summary": "读取会话配置 / Get conversation configuration",
-    "description": "读取会话配置 / Get conversation configuration 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n恢复会话时读取该会话最近使用的模型配置。\n\n### Use case\nRead the most recently used model configuration when resuming a conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读，不修改会话。\n\n### Behavior and side effects\nRead-only; the conversation is unchanged.\n\n### 后续调用\n继续提交消息或展示当前模型。\n\n### Next step\nSubmit another message or display the current model.\n\n### 接口摘要\n读取会话配置 / Get conversation configuration\n\n### Operation summary\n读取会话配置 / Get conversation configuration",
     "parameters": [
       {
         "name": "channelId",
@@ -77,7 +77,7 @@
     "operationId": "createChat",
     "group": "chat",
     "summary": "创建会话并提交消息 / Create a conversation and submit a message",
-    "description": "创建会话并提交消息 / Create a conversation and submit a message 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n创建新会话并提交第一条用户消息。\n\n### Use case\nCreate a conversation and submit its first user message.\n\n### 前置条件\n已读取配置；引用的文件已经确认上传。\n\n### Prerequisites\nConfiguration has been read and referenced files are confirmed uploads.\n\n### 行为与副作用\n创建会话和消息，并安排 Agent 执行。\n\n### Behavior and side effects\nCreates a conversation and message and schedules Agent execution.\n\n### 后续调用\n使用返回的 conversationId 和 messageId 订阅 SSE。\n\n### Next step\nUse the returned conversationId and messageId to subscribe to SSE.\n\n### 接口摘要\n创建会话并提交消息 / Create a conversation and submit a message\n\n### Operation summary\n创建会话并提交消息 / Create a conversation and submit a message",
     "parameters": [
       {
         "name": "channelId",
@@ -107,7 +107,7 @@
     "operationId": "continueChat",
     "group": "chat",
     "summary": "向已有会话提交消息 / Submit a message to an existing conversation",
-    "description": "向已有会话提交消息 / Submit a message to an existing conversation 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n在已有会话中提交下一轮用户消息。\n\n### Use case\nSubmit the next user turn to an existing conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n创建新消息并安排继续执行。\n\n### Behavior and side effects\nCreates a new message and schedules continued execution.\n\n### 后续调用\n订阅该 messageId 的 SSE 或稍后补取事件。\n\n### Next step\nSubscribe to SSE for the messageId or recover its events later.\n\n### 接口摘要\n向已有会话提交消息 / Submit a message to an existing conversation\n\n### Operation summary\n向已有会话提交消息 / Submit a message to an existing conversation",
     "parameters": [
       {
         "name": "channelId",
@@ -148,7 +148,7 @@
     "operationId": "deleteConversation",
     "group": "conversations",
     "summary": "删除会话 / Delete a conversation",
-    "description": "删除会话 / Delete a conversation 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n永久移除用户不再需要的会话。\n\n### Use case\nPermanently remove a conversation the user no longer needs.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n删除会话及其可见关联数据。\n\n### Behavior and side effects\nDeletes the conversation and its visible related data.\n\n### 后续调用\n从本地列表和缓存中移除该会话。\n\n### Next step\nRemove the conversation from local lists and caches.\n\n### 接口摘要\n删除会话 / Delete a conversation\n\n### Operation summary\n删除会话 / Delete a conversation",
     "parameters": [
       {
         "name": "channelId",
@@ -189,7 +189,7 @@
     "operationId": "streamChatEvents",
     "group": "chat",
     "summary": "订阅消息事件流 / Stream message events",
-    "description": "订阅消息事件流 / Stream message events 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n实时接收指定消息的思考、工具、回答和结束事件。\n\n### Use case\nReceive thought, tool, answer, and completion events for a message in real time.\n\n### 前置条件\n消息已经创建且 messageId 与会话匹配。\n\n### Prerequisites\nThe message exists and its messageId belongs to the conversation.\n\n### 行为与副作用\n保持流式连接；断开不会取消服务端执行。\n\n### Behavior and side effects\nKeeps a streaming connection; disconnecting does not cancel server execution.\n\n### 后续调用\n正常 EOF 后读取消息详情；异常断开时使用 Events 补取。\n\n### Next step\nAfter normal EOF read message detail; after an unexpected disconnect recover through Events.\n\n### 接口摘要\n订阅消息事件流 / Stream message events\n\n### Operation summary\n订阅消息事件流 / Stream message events",
     "parameters": [
       {
         "name": "channelId",
@@ -240,7 +240,7 @@
     "operationId": "probeEventStream",
     "group": "chat",
     "summary": "探测 SSE 连接 / Probe the SSE connection",
-    "description": "探测 SSE 连接 / Probe the SSE connection 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n在接入或排障时验证网关、代理和客户端对 SSE 的支持。\n\n### Use case\nVerify SSE support across the gateway, proxy, and client during integration or diagnosis.\n\n### 前置条件\n准备符合格式的 probeId。\n\n### Prerequisites\nPrepare a valid probeId.\n\n### 行为与副作用\n只产生诊断事件，不创建业务会话。\n\n### Behavior and side effects\nProduces diagnostic events without creating a business conversation.\n\n### 后续调用\n确认分片、心跳和 EOF 行为后再接入正式流。\n\n### Next step\nConfirm chunking, heartbeat, and EOF behavior before using the production stream.\n\n### 接口摘要\n探测 SSE 连接 / Probe the SSE connection\n\n### Operation summary\n探测 SSE 连接 / Probe the SSE connection",
     "parameters": [
       {
         "name": "channelId",
@@ -280,7 +280,7 @@
     "operationId": "interruptConversation",
     "group": "chat",
     "summary": "中断会话执行 / Interrupt conversation execution",
-    "description": "中断会话执行 / Interrupt conversation execution 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n用户主动停止正在执行的会话。\n\n### Use case\nStop an actively executing conversation at the user's request.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n请求终止当前执行；已完成输出不会回滚。\n\n### Behavior and side effects\nRequests termination of active execution; completed output is not rolled back.\n\n### 后续调用\n查询活动状态或消息详情确认终态。\n\n### Next step\nQuery activity or message detail to confirm the terminal state.\n\n### 接口摘要\n中断会话执行 / Interrupt conversation execution\n\n### Operation summary\n中断会话执行 / Interrupt conversation execution",
     "parameters": [
       {
         "name": "channelId",
@@ -321,7 +321,7 @@
     "operationId": "compactConversation",
     "group": "chat",
     "summary": "压缩会话上下文 / Compact conversation context",
-    "description": "压缩会话上下文 / Compact conversation context 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n上下文接近模型上限或用户要求时触发压缩。\n\n### Use case\nTrigger context compaction near the model limit or on explicit user request.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n异步安排上下文压缩。\n\n### Behavior and side effects\nSchedules asynchronous context compaction.\n\n### 后续调用\n轮询上下文占用或等待相关事件。\n\n### Next step\nPoll context usage or wait for related events.\n\n### 接口摘要\n压缩会话上下文 / Compact conversation context\n\n### Operation summary\n压缩会话上下文 / Compact conversation context",
     "parameters": [
       {
         "name": "channelId",
@@ -373,7 +373,7 @@
     "operationId": "getConversationContextUsage",
     "group": "conversations",
     "summary": "读取上下文占用 / Get context usage",
-    "description": "读取上下文占用 / Get context usage 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n决定是否需要压缩上下文或提示容量时读取占用。\n\n### Use case\nRead context usage to decide whether to compact or warn about capacity.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n达到阈值时调用 compactConversation。\n\n### Next step\nCall compactConversation when the threshold is reached.\n\n### 接口摘要\n读取上下文占用 / Get context usage\n\n### Operation summary\n读取上下文占用 / Get context usage",
     "parameters": [
       {
         "name": "channelId",
@@ -414,7 +414,7 @@
     "operationId": "listConversations",
     "group": "conversations",
     "summary": "分页查询会话 / List conversations",
-    "description": "分页查询会话 / List conversations 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n构建用户的分页会话列表与搜索结果。\n\n### Use case\nBuild the user's paged conversation list and search results.\n\n### 前置条件\n外部用户已配置。\n\n### Prerequisites\nThe external user is configured.\n\n### 行为与副作用\n只读，返回分页记录。\n\n### Behavior and side effects\nRead-only and returns paged records.\n\n### 后续调用\n按需读取标题、活动状态或消息。\n\n### Next step\nRead titles, activity, or messages as needed.\n\n### 接口摘要\n分页查询会话 / List conversations\n\n### Operation summary\n分页查询会话 / List conversations",
     "parameters": [
       {
         "name": "channelId",
@@ -534,7 +534,7 @@
     "operationId": "listActiveConversations",
     "group": "conversations",
     "summary": "查询活动会话 / List active conversations",
-    "description": "查询活动会话 / List active conversations 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n快速恢复当前仍在执行的会话。\n\n### Use case\nQuickly recover conversations that are still executing.\n\n### 前置条件\n外部用户已配置。\n\n### Prerequisites\nThe external user is configured.\n\n### 行为与副作用\n只读，返回会话 ID。\n\n### Behavior and side effects\nRead-only and returns conversation IDs.\n\n### 后续调用\n批量查询活动详情或重新连接 SSE。\n\n### Next step\nBatch-query activity details or reconnect SSE.\n\n### 接口摘要\n查询活动会话 / List active conversations\n\n### Operation summary\n查询活动会话 / List active conversations",
     "parameters": [
       {
         "name": "channelId",
@@ -564,7 +564,7 @@
     "operationId": "listUnreadConversations",
     "group": "conversations",
     "summary": "查询未读会话 / List unread conversations",
-    "description": "查询未读会话 / List unread conversations 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n显示存在未读完成结果的会话角标。\n\n### Use case\nDisplay conversations with unread completed results.\n\n### 前置条件\n外部用户已配置。\n\n### Prerequisites\nThe external user is configured.\n\n### 行为与副作用\n只读，返回未读会话 ID。\n\n### Behavior and side effects\nRead-only and returns unread conversation IDs.\n\n### 后续调用\n读取消息后推进已读游标。\n\n### Next step\nAdvance the read cursor after reading messages.\n\n### 接口摘要\n查询未读会话 / List unread conversations\n\n### Operation summary\n查询未读会话 / List unread conversations",
     "parameters": [
       {
         "name": "channelId",
@@ -594,7 +594,7 @@
     "operationId": "queryConversationActivities",
     "group": "conversations",
     "summary": "批量查询会话活动 / Query conversation activities",
-    "description": "批量查询会话活动 / Query conversation activities 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n批量刷新多个会话的执行与未读状态。\n\n### Use case\nRefresh execution and unread state for multiple conversations in one request.\n\n### 前置条件\n已持有最多 1000 个当前用户的会话 ID。\n\n### Prerequisites\nUp to 1000 conversation IDs for the current user are available.\n\n### 行为与副作用\n只读，返回每个会话的活动投影。\n\n### Behavior and side effects\nRead-only and returns an activity projection per conversation.\n\n### 后续调用\n更新列表状态并恢复必要的流。\n\n### Next step\nUpdate list state and recover any required streams.\n\n### 接口摘要\n批量查询会话活动 / Query conversation activities\n\n### Operation summary\n批量查询会话活动 / Query conversation activities",
     "parameters": [
       {
         "name": "channelId",
@@ -624,7 +624,7 @@
     "operationId": "markConversationRead",
     "group": "conversations",
     "summary": "推进会话已读游标 / Mark a conversation as read",
-    "description": "推进会话已读游标 / Mark a conversation as read 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n用户查看结果后推进会话已读位置。\n\n### Use case\nAdvance a conversation's read position after the user views a result.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n更新已读游标，不删除消息。\n\n### Behavior and side effects\nUpdates the read cursor without deleting messages.\n\n### 后续调用\n刷新未读会话列表。\n\n### Next step\nRefresh the unread conversation list.\n\n### 接口摘要\n推进会话已读游标 / Mark a conversation as read\n\n### Operation summary\n推进会话已读游标 / Mark a conversation as read",
     "parameters": [
       {
         "name": "channelId",
@@ -665,7 +665,7 @@
     "operationId": "getConversationStats",
     "group": "conversations",
     "summary": "读取会话统计 / Get conversation statistics",
-    "description": "读取会话统计 / Get conversation statistics 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n展示当前用户在渠道中的会话聚合统计。\n\n### Use case\nDisplay aggregate conversation statistics for the current user in the channel.\n\n### 前置条件\n外部用户已配置。\n\n### Prerequisites\nThe external user is configured.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n用于仪表盘展示，不作为逐会话状态来源。\n\n### Next step\nUse for dashboards, not as per-conversation state.\n\n### 接口摘要\n读取会话统计 / Get conversation statistics\n\n### Operation summary\n读取会话统计 / Get conversation statistics",
     "parameters": [
       {
         "name": "channelId",
@@ -695,7 +695,7 @@
     "operationId": "getConversationTitle",
     "group": "conversations",
     "summary": "读取会话标题 / Get conversation title",
-    "description": "读取会话标题 / Get conversation title 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n读取自动生成或用户设置的会话标题。\n\n### Use case\nRead the generated or user-defined conversation title.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n生成中时稍后重试，或允许用户更新标题。\n\n### Next step\nRetry while generation is pending or let the user update the title.\n\n### 接口摘要\n读取会话标题 / Get conversation title\n\n### Operation summary\n读取会话标题 / Get conversation title",
     "parameters": [
       {
         "name": "channelId",
@@ -736,7 +736,7 @@
     "operationId": "updateConversationTitle",
     "group": "conversations",
     "summary": "更新会话标题 / Update conversation title",
-    "description": "更新会话标题 / Update conversation title 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n保存用户编辑的会话标题。\n\n### Use case\nSave a user-edited conversation title.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n异步更新标题。\n\n### Behavior and side effects\nUpdates the title asynchronously.\n\n### 后续调用\n重新读取标题或刷新列表。\n\n### Next step\nRead the title again or refresh the list.\n\n### 接口摘要\n更新会话标题 / Update conversation title\n\n### Operation summary\n更新会话标题 / Update conversation title",
     "parameters": [
       {
         "name": "channelId",
@@ -777,7 +777,7 @@
     "operationId": "updateConversationStatus",
     "group": "conversations",
     "summary": "更新会话状态 / Update conversation status",
-    "description": "更新会话状态 / Update conversation status 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n归档、恢复或切换会话业务状态。\n\n### Use case\nArchive, restore, or otherwise change conversation business status.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n异步更新会话状态。\n\n### Behavior and side effects\nUpdates conversation status asynchronously.\n\n### 后续调用\n按新状态刷新会话列表。\n\n### Next step\nRefresh conversation lists using the new status.\n\n### 接口摘要\n更新会话状态 / Update conversation status\n\n### Operation summary\n更新会话状态 / Update conversation status",
     "parameters": [
       {
         "name": "channelId",
@@ -818,7 +818,7 @@
     "operationId": "getSqlQueryResult",
     "group": "sql",
     "summary": "分页读取 SQL 结果 / Get paged SQL results",
-    "description": "分页读取 SQL 结果 / Get paged SQL results 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n分页查看 SQL 工具返回的表格数据。\n\n### Use case\nInspect tabular data returned by the SQL tool page by page.\n\n### 前置条件\n从事件或消息中取得 conversationId 和 resultId。\n\n### Prerequisites\nObtain conversationId and resultId from an event or message.\n\n### 行为与副作用\n只读，返回当前页和列定义。\n\n### Behavior and side effects\nRead-only and returns a page plus column definitions.\n\n### 后续调用\n按需读取图表数据或导出。\n\n### Next step\nRead chart data or export as needed.\n\n### 接口摘要\n分页读取 SQL 结果 / Get paged SQL results\n\n### Operation summary\n分页读取 SQL 结果 / Get paged SQL results",
     "parameters": [
       {
         "name": "channelId",
@@ -895,7 +895,7 @@
     "operationId": "getSqlQueryChartData",
     "group": "sql",
     "summary": "读取 SQL 图表数据 / Get SQL chart data",
-    "description": "读取 SQL 图表数据 / Get SQL chart data 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n取得适合前端图表渲染的 SQL 数据集。\n\n### Use case\nObtain a SQL dataset prepared for chart rendering.\n\n### 前置条件\nresultId 对应可图表化的 SQL 结果。\n\n### Prerequisites\nThe resultId identifies a chartable SQL result.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n按返回的列类型构建图表。\n\n### Next step\nBuild charts using the returned column types.\n\n### 接口摘要\n读取 SQL 图表数据 / Get SQL chart data\n\n### Operation summary\n读取 SQL 图表数据 / Get SQL chart data",
     "parameters": [
       {
         "name": "channelId",
@@ -947,7 +947,7 @@
     "operationId": "exportSqlQueryResult",
     "group": "sql",
     "summary": "导出 SQL 结果 / Export SQL results",
-    "description": "导出 SQL 结果 / Export SQL results 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n把完整 SQL 结果下载为 CSV 或 XLSX。\n\n### Use case\nDownload the complete SQL result as CSV or XLSX.\n\n### 前置条件\nresultId 有效，format 与 Accept 匹配。\n\n### Prerequisites\nThe resultId is valid and format matches Accept.\n\n### 行为与副作用\n返回二进制下载流。\n\n### Behavior and side effects\nReturns a binary download stream.\n\n### 后续调用\n按 Content-Disposition 保存文件，不要解析为 JSON。\n\n### Next step\nSave using Content-Disposition and do not parse as JSON.\n\n### 接口摘要\n导出 SQL 结果 / Export SQL results\n\n### Operation summary\n导出 SQL 结果 / Export SQL results",
     "parameters": [
       {
         "name": "channelId",
@@ -1023,7 +1023,7 @@
     "operationId": "listConversationMessages",
     "group": "messages",
     "summary": "分页查询会话消息 / List conversation messages",
-    "description": "分页查询会话消息 / List conversation messages 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n分页加载会话历史记录。\n\n### Use case\nLoad conversation history page by page.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读，返回消息分页。\n\n### Behavior and side effects\nRead-only and returns a message page.\n\n### 后续调用\n选择消息后读取详情或事件。\n\n### Next step\nRead message detail or events after selection.\n\n### 接口摘要\n分页查询会话消息 / List conversation messages\n\n### Operation summary\n分页查询会话消息 / List conversation messages",
     "parameters": [
       {
         "name": "channelId",
@@ -1144,7 +1144,7 @@
     "operationId": "getConversationMessage",
     "group": "messages",
     "summary": "读取单条会话消息 / Get a conversation message",
-    "description": "读取单条会话消息 / Get a conversation message 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n恢复或审计单条消息的完整状态。\n\n### Use case\nRecover or audit the complete state of one message.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n根据状态读取事件、异步任务或工具结果。\n\n### Next step\nRead events, asynchronous tasks, or tool results according to status.\n\n### 接口摘要\n读取单条会话消息 / Get a conversation message\n\n### Operation summary\n读取单条会话消息 / Get a conversation message",
     "parameters": [
       {
         "name": "channelId",
@@ -1196,7 +1196,7 @@
     "operationId": "listConversationAsyncTasks",
     "group": "messages",
     "summary": "分页查询异步任务 / List asynchronous tasks",
-    "description": "分页查询异步任务 / List asynchronous tasks 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n分页查看会话产生的长任务。\n\n### Use case\nList long-running tasks produced by a conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n对未完成任务读取详情并轮询。\n\n### Next step\nRead and poll details for unfinished tasks.\n\n### 接口摘要\n分页查询异步任务 / List asynchronous tasks\n\n### Operation summary\n分页查询异步任务 / List asynchronous tasks",
     "parameters": [
       {
         "name": "channelId",
@@ -1330,7 +1330,7 @@
     "operationId": "getConversationAsyncTask",
     "group": "messages",
     "summary": "读取异步任务 / Get an asynchronous task",
-    "description": "读取异步任务 / Get an asynchronous task 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n查看单个异步任务的进度与输出。\n\n### Use case\nInspect progress and output for one asynchronous task.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n完成后消费输出，失败时展示明确错误。\n\n### Next step\nConsume output on completion and show explicit errors on failure.\n\n### 接口摘要\n读取异步任务 / Get an asynchronous task\n\n### Operation summary\n读取异步任务 / Get an asynchronous task",
     "parameters": [
       {
         "name": "channelId",
@@ -1382,7 +1382,7 @@
     "operationId": "cancelQueuedMessage",
     "group": "messages",
     "summary": "取消排队消息 / Cancel a queued message",
-    "description": "取消排队消息 / Cancel a queued message 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n在消息尚未开始执行时取消排队。\n\n### Use case\nCancel a message before execution begins.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n尝试把排队消息置为取消状态。\n\n### Behavior and side effects\nAttempts to move a queued message to cancelled state.\n\n### 后续调用\n读取消息确认结果；执行中的消息改用 interrupt。\n\n### Next step\nRead the message to confirm; use interrupt for active execution.\n\n### 接口摘要\n取消排队消息 / Cancel a queued message\n\n### Operation summary\n取消排队消息 / Cancel a queued message",
     "parameters": [
       {
         "name": "channelId",
@@ -1434,7 +1434,7 @@
     "operationId": "getChatEvents",
     "group": "events",
     "summary": "读取消息事件 / Get message events",
-    "description": "读取消息事件 / Get message events 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n恢复单条消息已经持久化的事件。\n\n### Use case\nRecover persisted events for one message.\n\n### 前置条件\nconversationId 与 messageId 匹配。\n\n### Prerequisites\nconversationId and messageId match.\n\n### 行为与副作用\n只读，不重新执行 Agent。\n\n### Behavior and side effects\nRead-only and does not re-run the Agent.\n\n### 后续调用\n重建 UI 状态或与 SSE 后续事件合并。\n\n### Next step\nRebuild UI state or merge with later SSE events.\n\n### 接口摘要\n读取消息事件 / Get message events\n\n### Operation summary\n读取消息事件 / Get message events",
     "parameters": [
       {
         "name": "channelId",
@@ -1484,7 +1484,7 @@
     "operationId": "getChatEventsBatch",
     "group": "events",
     "summary": "批量读取消息事件 / Get message events in batch",
-    "description": "批量读取消息事件 / Get message events in batch 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n客户端重启后一次恢复多条消息事件。\n\n### Use case\nRecover events for multiple messages after a client restart.\n\n### 前置条件\n请求包含一个会话和最多 50 个消息 ID。\n\n### Prerequisites\nThe request contains one conversation and up to 50 message IDs.\n\n### 行为与副作用\n只读，并明确返回跳过项。\n\n### Behavior and side effects\nRead-only and explicitly reports skipped items.\n\n### 后续调用\n按 messageId 合并记录并处理 skipped。\n\n### Next step\nMerge records by messageId and handle skipped entries.\n\n### 接口摘要\n批量读取消息事件 / Get message events in batch\n\n### Operation summary\n批量读取消息事件 / Get message events in batch",
     "parameters": [
       {
         "name": "channelId",
@@ -1514,7 +1514,7 @@
     "operationId": "listConversationShares",
     "group": "conversations",
     "summary": "查询会话分享 / List conversation shares",
-    "description": "查询会话分享 / List conversation shares 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n查看会话当前创建的分享记录。\n\n### Use case\nInspect the conversation's current share records.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n按需创建新分享或撤销旧分享。\n\n### Next step\nCreate a new share or revoke an existing one as needed.\n\n### 接口摘要\n查询会话分享 / List conversation shares\n\n### Operation summary\n查询会话分享 / List conversation shares",
     "parameters": [
       {
         "name": "channelId",
@@ -1555,7 +1555,7 @@
     "operationId": "createConversationShare",
     "group": "conversations",
     "summary": "创建会话分享 / Create a conversation share",
-    "description": "创建会话分享 / Create a conversation share 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n为会话创建受控的外部分享。\n\n### Use case\nCreate controlled external sharing for a conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n创建新的分享记录和分享码。\n\n### Behavior and side effects\nCreates a share record and share code.\n\n### 后续调用\n安全地交付分享信息，并定期检查有效期。\n\n### Next step\nDeliver share information securely and monitor its expiry.\n\n### 接口摘要\n创建会话分享 / Create a conversation share\n\n### Operation summary\n创建会话分享 / Create a conversation share",
     "parameters": [
       {
         "name": "channelId",
@@ -1596,7 +1596,7 @@
     "operationId": "revokeConversationShare",
     "group": "conversations",
     "summary": "撤销会话分享 / Revoke a conversation share",
-    "description": "撤销会话分享 / Revoke a conversation share 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n使不再需要的分享立即失效。\n\n### Use case\nInvalidate a share that is no longer needed.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n撤销指定分享，不删除原会话。\n\n### Behavior and side effects\nRevokes the selected share without deleting the conversation.\n\n### 后续调用\n刷新分享列表并停止分发旧链接。\n\n### Next step\nRefresh the share list and stop distributing the old link.\n\n### 接口摘要\n撤销会话分享 / Revoke a conversation share\n\n### Operation summary\n撤销会话分享 / Revoke a conversation share",
     "parameters": [
       {
         "name": "channelId",
@@ -1648,7 +1648,7 @@
     "operationId": "approvePlan",
     "group": "interactions",
     "summary": "提交计划审批 / Submit plan approval",
-    "description": "提交计划审批 / Submit plan approval 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n响应 Agent 发出的计划审批请求。\n\n### Use case\nRespond to a plan-approval request emitted by the Agent.\n\n### 前置条件\n从事件取得 planId、conversationId 和 messageId。\n\n### Prerequisites\nObtain planId, conversationId, and messageId from the event.\n\n### 行为与副作用\n提交批准或拒绝，可能推动执行继续。\n\n### Behavior and side effects\nSubmits approval or rejection and may resume execution.\n\n### 后续调用\n查询计划状态并继续监听事件。\n\n### Next step\nCheck plan status and continue listening for events.\n\n### 接口摘要\n提交计划审批 / Submit plan approval\n\n### Operation summary\n提交计划审批 / Submit plan approval",
     "parameters": [
       {
         "name": "channelId",
@@ -1678,7 +1678,7 @@
     "operationId": "getPlanStatus",
     "group": "interactions",
     "summary": "查询计划审批状态 / Get plan approval status",
-    "description": "查询计划审批状态 / Get plan approval status 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n确认计划是否仍在等待或已经处理。\n\n### Use case\nCheck whether a plan is still pending or has been handled.\n\n### 前置条件\n持有事件返回的 planId。\n\n### Prerequisites\nA planId returned by an event is available.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\npending 时等待用户操作，否则刷新执行状态。\n\n### Next step\nWait for user action while pending; otherwise refresh execution state.\n\n### 接口摘要\n查询计划审批状态 / Get plan approval status\n\n### Operation summary\n查询计划审批状态 / Get plan approval status",
     "parameters": [
       {
         "name": "channelId",
@@ -1719,7 +1719,7 @@
     "operationId": "getUserInputStatus",
     "group": "interactions",
     "summary": "查询用户问答状态 / Get user-input status",
-    "description": "查询用户问答状态 / Get user-input status 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n恢复页面时确认 Agent 问题是否仍待回答。\n\n### Use case\nCheck whether an Agent question is still awaiting an answer after restoring a page.\n\n### 前置条件\nquestionId、conversationId 和 messageId 来自同一事件。\n\n### Prerequisites\nquestionId, conversationId, and messageId come from the same event.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n仍 pending 时展示问题，否则继续恢复事件。\n\n### Next step\nShow the question while pending; otherwise continue event recovery.\n\n### 接口摘要\n查询用户问答状态 / Get user-input status\n\n### Operation summary\n查询用户问答状态 / Get user-input status",
     "parameters": [
       {
         "name": "channelId",
@@ -1780,7 +1780,7 @@
     "operationId": "answerUserInput",
     "group": "interactions",
     "summary": "提交用户回答 / Submit a user answer",
-    "description": "提交用户回答 / Submit a user answer 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n提交用户对 Agent 问题的选项或自定义回答。\n\n### Use case\nSubmit selected options or custom input for an Agent question.\n\n### 前置条件\n问题仍处于 pending 且标识与消息匹配。\n\n### Prerequisites\nThe question is pending and identifiers match the message.\n\n### 行为与副作用\n保存回答并可能推动执行继续。\n\n### Behavior and side effects\nStores the answer and may resume execution.\n\n### 后续调用\n继续监听 SSE 或查询消息状态。\n\n### Next step\nContinue listening to SSE or query message state.\n\n### 接口摘要\n提交用户回答 / Submit a user answer\n\n### Operation summary\n提交用户回答 / Submit a user answer",
     "parameters": [
       {
         "name": "channelId",
@@ -1810,7 +1810,7 @@
     "operationId": "createPreSignedUpload",
     "group": "files",
     "summary": "创建预签名上传地址 / Create a presigned upload URL",
-    "description": "创建预签名上传地址 / Create a presigned upload URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n为需要上传的新附件申请对象存储地址。\n\n### Use case\nRequest an object-storage URL for a new attachment.\n\n### 前置条件\n已计算文件 MD5，文件模块为 ai-chat-attachments。\n\n### Prerequisites\nThe file MD5 is known and the module is ai-chat-attachments.\n\n### 行为与副作用\n创建短期上传授权，不代表上传完成。\n\n### Behavior and side effects\nCreates short-lived upload authorization; upload is not yet complete.\n\n### 后续调用\n按返回 headers 上传文件，再调用确认接口。\n\n### Next step\nUpload with the returned headers, then call confirmation.\n\n### 接口摘要\n创建预签名上传地址 / Create a presigned upload URL\n\n### Operation summary\n创建预签名上传地址 / Create a presigned upload URL",
     "parameters": [
       {
         "name": "channelId",
@@ -1840,7 +1840,7 @@
     "operationId": "confirmPreSignedUpload",
     "group": "files",
     "summary": "确认预签名上传 / Confirm a presigned upload",
-    "description": "确认预签名上传 / Confirm a presigned upload 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n对象存储上传成功后登记文件。\n\n### Use case\nRegister a file after object-storage upload succeeds.\n\n### 前置条件\n持有预签名响应的 fileUk 和同一 contentMd5。\n\n### Prerequisites\nThe fileUk and matching contentMd5 from the presign response are available.\n\n### 行为与副作用\n确认文件并返回可用于聊天的文件记录。\n\n### Behavior and side effects\nConfirms the file and returns a record usable in chat.\n\n### 后续调用\n把返回的文件 ID 放入聊天请求。\n\n### Next step\nPlace the returned file ID in a chat request.\n\n### 接口摘要\n确认预签名上传 / Confirm a presigned upload\n\n### Operation summary\n确认预签名上传 / Confirm a presigned upload",
     "parameters": [
       {
         "name": "channelId",
@@ -1870,7 +1870,7 @@
     "operationId": "createFileByContentMd5",
     "group": "files",
     "summary": "按 MD5 复用文件 / Reuse a file by MD5",
-    "description": "按 MD5 复用文件 / Reuse a file by MD5 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n复用服务端已经存在的相同内容文件。\n\n### Use case\nReuse an existing server-side file with identical content.\n\n### 前置条件\n已计算 MD5 并确认内容可复用。\n\n### Prerequisites\nThe MD5 is known and the content is safe to reuse.\n\n### 行为与副作用\n创建当前用户可引用的文件记录，不上传字节。\n\n### Behavior and side effects\nCreates a user-visible file record without uploading bytes.\n\n### 后续调用\n把返回的文件 ID 放入聊天请求。\n\n### Next step\nPlace the returned file ID in a chat request.\n\n### 接口摘要\n按 MD5 复用文件 / Reuse a file by MD5\n\n### Operation summary\n按 MD5 复用文件 / Reuse a file by MD5",
     "parameters": [
       {
         "name": "channelId",
@@ -1900,7 +1900,7 @@
     "operationId": "fileExistsByContentMd5",
     "group": "files",
     "summary": "检查 MD5 文件是否存在 / Check file existence by MD5",
-    "description": "检查 MD5 文件是否存在 / Check file existence by MD5 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n上传前检查相同内容是否已经存在。\n\n### Use case\nCheck whether identical content exists before uploading.\n\n### 前置条件\n已计算文件 MD5。\n\n### Prerequisites\nThe file MD5 is known.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n存在时尝试复用，否则走预签名上传。\n\n### Next step\nAttempt reuse when present; otherwise use presigned upload.\n\n### 接口摘要\n检查 MD5 文件是否存在 / Check file existence by MD5\n\n### Operation summary\n检查 MD5 文件是否存在 / Check file existence by MD5",
     "parameters": [
       {
         "name": "channelId",
@@ -1940,7 +1940,7 @@
     "operationId": "getConversationFilePreview",
     "group": "files",
     "summary": "创建会话文件预览地址 / Create a conversation file preview URL",
-    "description": "创建会话文件预览地址 / Create a conversation file preview URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n为会话附件创建短期预览地址。\n\n### Use case\nCreate a short-lived preview URL for a conversation attachment.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n生成临时读取授权，不修改文件。\n\n### Behavior and side effects\nCreates temporary read authorization without changing the file.\n\n### 后续调用\n在过期前打开或下载 URL。\n\n### Next step\nOpen or download the URL before it expires.\n\n### 接口摘要\n创建会话文件预览地址 / Create a conversation file preview URL\n\n### Operation summary\n创建会话文件预览地址 / Create a conversation file preview URL",
     "parameters": [
       {
         "name": "channelId",
@@ -1992,7 +1992,7 @@
     "operationId": "getPlanIntermediateFilePreview",
     "group": "files",
     "summary": "创建计划快照预览地址 / Create a plan snapshot preview URL",
-    "description": "创建计划快照预览地址 / Create a plan snapshot preview URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n预览计划执行过程中生成的中间文件。\n\n### Use case\nPreview an intermediate file produced during plan execution.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n生成临时读取授权。\n\n### Behavior and side effects\nCreates temporary read authorization.\n\n### 后续调用\n在过期前使用 URL，并保留消息上下文。\n\n### Next step\nUse the URL before expiry and preserve message context.\n\n### 接口摘要\n创建计划快照预览地址 / Create a plan snapshot preview URL\n\n### Operation summary\n创建计划快照预览地址 / Create a plan snapshot preview URL",
     "parameters": [
       {
         "name": "channelId",
@@ -2055,7 +2055,7 @@
     "operationId": "getCitationMetadataBatch",
     "group": "knowledge",
     "summary": "批量读取引用元数据 / Get citation metadata in batch",
-    "description": "批量读取引用元数据 / Get citation metadata in batch 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n一次解析回答中的多条知识引用。\n\n### Use case\nResolve multiple knowledge citations from an answer in one request.\n\n### 前置条件\n引用列表来自服务端消息或事件。\n\n### Prerequisites\nThe reference list comes from a server message or event.\n\n### 行为与副作用\n只读，返回可展示元数据。\n\n### Behavior and side effects\nRead-only and returns display metadata.\n\n### 后续调用\n按原引用顺序渲染来源。\n\n### Next step\nRender sources in the original reference order.\n\n### 接口摘要\n批量读取引用元数据 / Get citation metadata in batch\n\n### Operation summary\n批量读取引用元数据 / Get citation metadata in batch",
     "parameters": [
       {
         "name": "channelId",
@@ -2085,7 +2085,7 @@
     "operationId": "getCitationMetadata",
     "group": "knowledge",
     "summary": "读取引用元数据 / Get citation metadata",
-    "description": "读取引用元数据 / Get citation metadata 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n用户展开单条引用时读取来源详情。\n\n### Use case\nRead source detail when a user expands one citation.\n\n### 前置条件\ncitationType 与 referenceId 来自服务端。\n\n### Prerequisites\ncitationType and referenceId come from the server.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n展示标题、位置和其他元数据。\n\n### Next step\nDisplay title, location, and other metadata.\n\n### 接口摘要\n读取引用元数据 / Get citation metadata\n\n### Operation summary\n读取引用元数据 / Get citation metadata",
     "parameters": [
       {
         "name": "channelId",
@@ -2137,7 +2137,7 @@
     "operationId": "listWorkspaceArtifacts",
     "group": "workspace",
     "summary": "分页查询工作区制品 / List workspace artifacts",
-    "description": "分页查询工作区制品 / List workspace artifacts 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n分页浏览会话工作区中的生成制品。\n\n### Use case\nBrowse generated artifacts in a conversation workspace page by page.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读，返回文件及非文件制品。\n\n### Behavior and side effects\nRead-only and returns file and non-file artifacts.\n\n### 后续调用\n对文件路径请求预览，或展示非文件制品。\n\n### Next step\nRequest previews for file paths or display non-file artifacts.\n\n### 接口摘要\n分页查询工作区制品 / List workspace artifacts\n\n### Operation summary\n分页查询工作区制品 / List workspace artifacts",
     "parameters": [
       {
         "name": "channelId",
@@ -2268,7 +2268,7 @@
     "operationId": "getWorkspaceFilePreview",
     "group": "workspace",
     "summary": "创建工作区文件预览地址 / Create a workspace file preview URL",
-    "description": "创建工作区文件预览地址 / Create a workspace file preview URL 请求会在身份验签和资源归属校验后执行；响应字段以本契约为准。 / The request runs after signature and resource-ownership validation; this contract defines the response fields.",
+    "description": "### 使用场景\n为工作区中的具体文件创建预览地址。\n\n### Use case\nCreate a preview URL for a specific workspace file.\n\n### 前置条件\npath 来自工作区列表且属于当前会话。\n\n### Prerequisites\nThe path comes from the workspace list and belongs to the conversation.\n\n### 行为与副作用\n生成临时读取授权。\n\n### Behavior and side effects\nCreates temporary read authorization.\n\n### 后续调用\n在过期前使用 URL。\n\n### Next step\nUse the URL before it expires.\n\n### 接口摘要\n创建工作区文件预览地址 / Create a workspace file preview URL\n\n### Operation summary\n创建工作区文件预览地址 / Create a workspace file preview URL",
     "parameters": [
       {
         "name": "channelId",
