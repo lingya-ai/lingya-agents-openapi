@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a left-navigation signing guide for clients that call the API with raw HTTP.
+
 ## 0.1.5 - 2026-09-27
 
 - Add asynchronous-task sync and subagent list, sync, detail, result, and cancellation operations.

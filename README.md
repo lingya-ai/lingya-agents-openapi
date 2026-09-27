@@ -5,7 +5,7 @@ Lingya Agents OpenAPI
 This is the canonical OpenAPI 3.1 contract for the signed Lingya Agents channel API. It covers the 52 operations under `/api/agents/channel/openapi/v1/{channelId}/chat` and intentionally excludes Studio administration endpoints.
 
 在线接口文档提供十个业务分组的使用场景、全部接口的 Raw HTTP、cURL 以及请求和响应示例：[打开在线文档](https://lingya-ai.github.io/lingya-agents-openapi/)。
-The online API reference provides use cases for all ten business groups plus Raw HTTP, cURL, request, and response examples for every operation: [open the online reference](https://lingya-ai.github.io/lingya-agents-openapi/).
+The online API reference provides use cases for all ten business groups, a signing-rules guide for direct HTTP clients, and Raw HTTP, cURL, request, and response examples for every operation: [open the online reference](https://lingya-ai.github.io/lingya-agents-openapi/).
 
 ## 校验与构建
 Validation and build
