@@ -509,6 +509,38 @@ Object.assign(schemas, {
       trackingFailureCode: nullable({ type: "string" }), lastPollError: nullable({ type: "string" }),
     },
   ),
+  AgentAsyncTaskSync: objectOf(["activeTasks", "notificationMessages", "nextMessageId", "hasMore", "pollingRequired"], {
+    activeTasks: arrayOf(ref("AsyncTask")), notificationMessages: arrayOf(ref("ConversationMessage")),
+    nextMessageId: nullable({ type: "string" }), hasMore: { type: "boolean" }, pollingRequired: { type: "boolean" },
+  }),
+  SubagentTask: objectOf(
+    ["taskId", "description", "subagentType", "status", "parentConversationId", "parentMessageId", "resultAvailable", "artifactCount", "notificationStatus", "createdTime", "lastUpdateTime", "cancellable"],
+    {
+      taskId: { type: "string" }, description: { type: "string" }, subagentType: { type: "string" }, status: { type: "string" },
+      phase: nullable({ type: "string" }), progressPercent: nullable({ type: "integer", format: "int32", minimum: 0, maximum: 100 }),
+      parentConversationId: { type: "string" }, parentMessageId: { type: "string" }, childConversationId: nullable({ type: "string" }),
+      childMessageId: nullable({ type: "string" }), resultAvailable: { type: "boolean" }, artifactCount: { type: "integer", format: "int32", minimum: 0 },
+      notificationStatus: { type: "string" }, failureCode: nullable({ type: "string" }), failureMessage: nullable({ type: "string" }),
+      createdTime: { type: "string", format: "date-time" }, startedTime: nullable({ type: "string", format: "date-time" }),
+      completedTime: nullable({ type: "string", format: "date-time" }), lastUpdateTime: { type: "string", format: "date-time" },
+      cancellable: { type: "boolean" },
+    },
+  ),
+  SubagentTaskPage: objectOf(["records", "page"], { records: arrayOf(ref("SubagentTask")), page: ref("PageInfo") }),
+  SubagentTaskSync: objectOf(["activeTasks", "changedTasks", "nextCursor", "pollingRequired", "hasUnreadTerminalResults"], {
+    activeTasks: arrayOf(ref("SubagentTask")), changedTasks: arrayOf(ref("SubagentTask")), nextCursor: nullable({ type: "string" }),
+    pollingRequired: { type: "boolean" }, hasUnreadTerminalResults: { type: "boolean" },
+  }),
+  SubagentTaskArtifact: objectOf(["artifactId", "name", "deliveryStatus", "issueCodes", "recoverable"], {
+    artifactId: { type: "string" }, name: { type: "string" }, mimeType: nullable({ type: "string" }), size: nullable({ type: "integer", format: "int64", minimum: 0 }),
+    relativePath: nullable({ type: "string" }), deliveryStatus: { type: "string", enum: ["NOT_APPLICABLE", "UNVALIDATED", "ACCEPTED", "ACCEPTED_WITH_WARNINGS", "BLOCKED"] },
+    issueCodes: arrayOf({ type: "string" }), recoverable: { type: "boolean" },
+  }),
+  SubagentTaskResult: objectOf(["task", "artifacts", "inputTokens", "outputTokens", "nonFileArtifacts"], {
+    task: ref("SubagentTask"), resultText: nullable({ type: "string" }), artifacts: arrayOf(ref("SubagentTaskArtifact")),
+    inputTokens: { type: "integer", format: "int64", minimum: 0 }, outputTokens: { type: "integer", format: "int64", minimum: 0 },
+    nonFileArtifacts: arrayOf(ref("WorkspaceNonFileArtifact")),
+  }),
   GeneratePreSignedUrlInput: objectOf(["fileName", "module", "contentMd5"], {
     fileName: { type: "string", maxLength: 255 }, module: { type: "string", const: "ai-chat-attachments" },
     contentMd5: { type: "string", maxLength: 64 }, fileId: nullable({ type: "integer", format: "int64" }),
@@ -531,8 +563,8 @@ Object.assign(schemas, {
     relativePath: { type: "string" }, size: { type: "integer", format: "int64", minimum: 0 }, fileName: { type: "string" },
     mimeType: { type: "string" }, lastUpdateTime: { type: "string", format: "date-time" },
   }),
-  WorkspaceNonFileArtifact: objectOf(["artifactId", "kind", "title", "lastUpdateTime"], {
-    artifactId: { type: "string" }, kind: { type: "string" }, title: { type: "string" }, description: nullable({ type: "string" }),
+  WorkspaceNonFileArtifact: objectOf(["artifactId", "kind", "title", "description", "lastUpdateTime"], {
+    artifactId: { type: "integer", format: "int64" }, kind: { type: "string" }, title: { type: "string" }, description: { type: "string" },
     lastUpdateTime: { type: "string", format: "date-time" }, previewUrl: nullable({ type: "string", format: "uri" }),
   }),
   WorkspaceFilePage: objectOf(["records", "page"], { records: arrayOf(ref("WorkspaceFile")), page: ref("PageInfo") }),
@@ -786,7 +818,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Lingya Agents OpenAPI",
-    version: "0.1.4",
+    version: "0.1.5",
     description: [
       "本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，使用 OPENAPI-HMAC-SHA256-V1 验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。",
       "This contract describes the public Lingya Agents channel API for trusted servers. Requests use OPENAPI-HMAC-SHA256-V1, and Studio administration endpoints are excluded. The online reference only displays requests and never collects or stores a secret in the browser.",
@@ -916,7 +948,13 @@ add("get", "/conversations/{conversationId}/sql-query-results/{resultId}/export"
 add("get", "/conversations/{conversationId}/messages", "listConversationMessages", "Messages", "200", "ConversationMessagePage", { parameters: [pathParam("conversationId"), ...pageParams] });
 add("get", "/conversations/{conversationId}/messages/{messageId}", "getConversationMessage", "Messages", "200", "ConversationMessage", { parameters: [pathParam("conversationId"), pathParam("messageId")] });
 add("get", "/conversations/{conversationId}/async-tasks", "listConversationAsyncTasks", "Messages", "200", "AsyncTaskPage", { parameters: [pathParam("conversationId"), ...pageParams, queryParam("status", { type: "array", items: { type: "string" } })] });
+add("get", "/conversations/{conversationId}/async-tasks/sync", "syncConversationAsyncTasks", "Messages", "200", "AgentAsyncTaskSync", { parameters: [pathParam("conversationId"), queryParam("afterMessageId", { type: "string", maxLength: 64 }), queryParam("size", { type: "integer", minimum: 1, maximum: 50, default: 50 })] });
 add("get", "/conversations/{conversationId}/async-tasks/{asyncTaskId}", "getConversationAsyncTask", "Messages", "200", "AsyncTask", { parameters: [pathParam("conversationId"), pathParam("asyncTaskId")] });
+add("get", "/conversations/{conversationId}/subagents", "listConversationSubagents", "Messages", "200", "SubagentTaskPage", { parameters: [pathParam("conversationId"), ...pageParams, queryParam("status", { type: "array", items: { type: "string" } })] });
+add("get", "/conversations/{conversationId}/subagents/sync", "syncConversationSubagents", "Messages", "200", "SubagentTaskSync", { parameters: [pathParam("conversationId"), queryParam("cursor", { type: "string", maxLength: 1048576 }), queryParam("size", { type: "integer", minimum: 1, maximum: 100, default: 50 })] });
+add("get", "/conversations/{conversationId}/subagents/{subagentTaskId}", "getConversationSubagent", "Messages", "200", "SubagentTask", { parameters: [pathParam("conversationId"), pathParam("subagentTaskId")] });
+add("get", "/conversations/{conversationId}/subagents/{subagentTaskId}/result", "getConversationSubagentResult", "Messages", "200", "SubagentTaskResult", { parameters: [pathParam("conversationId"), pathParam("subagentTaskId")] });
+add("delete", "/conversations/{conversationId}/subagents/{subagentTaskId}", "cancelConversationSubagent", "Messages", "200", "SubagentTask", { parameters: [pathParam("conversationId"), pathParam("subagentTaskId")] });
 add("delete", "/conversations/{conversationId}/messages/{messageId}/queue", "cancelQueuedMessage", "Messages", "200", "ConversationMessage", { parameters: [pathParam("conversationId"), pathParam("messageId")] });
 add("get", "/events", "getChatEvents", "Events", "200", "AiChatBriefEventList", { parameters: [queryParam("conversationId", { type: "string" }, true), queryParam("messageId", { type: "string" }, true)] });
 add("post", "/events/batch", "getChatEventsBatch", "Events", "201", "AiChatEventsBatch", { body: "AiChatEventsBatchInput" });
@@ -965,7 +1003,13 @@ const operationSummaries = {
   listConversationMessages: "分页查询会话消息 / List conversation messages",
   getConversationMessage: "读取单条会话消息 / Get a conversation message",
   listConversationAsyncTasks: "分页查询异步任务 / List asynchronous tasks",
+  syncConversationAsyncTasks: "增量同步异步任务 / Sync asynchronous task updates",
   getConversationAsyncTask: "读取异步任务 / Get an asynchronous task",
+  listConversationSubagents: "分页查询子 Agent 任务 / List subagent tasks",
+  syncConversationSubagents: "增量同步子 Agent 状态 / Sync subagent task updates",
+  getConversationSubagent: "读取子 Agent 状态 / Get a subagent task",
+  getConversationSubagentResult: "读取子 Agent 结果 / Get a subagent result",
+  cancelConversationSubagent: "取消子 Agent 任务 / Cancel a subagent task",
   cancelQueuedMessage: "取消排队消息 / Cancel a queued message",
   getChatEvents: "读取消息事件 / Get message events",
   getChatEventsBatch: "批量读取消息事件 / Get message events in batch",
@@ -993,6 +1037,9 @@ const parameterDescriptions = {
   conversationId: "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
   messageId: "用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.",
   asyncTaskId: "异步任务 ID。 / Asynchronous task ID.",
+  subagentTaskId: "子 Agent 任务 ID。 / Subagent task ID.",
+  afterMessageId: "通知消息同步游标。 / Notification-message sync cursor.",
+  cursor: "子 Agent 状态同步游标。 / Subagent-state sync cursor.",
   resultId: "SQL 查询结果 ID。 / SQL query-result ID.",
   shareId: "会话分享记录 ID。 / Conversation-share record ID.",
   planId: "等待审批的计划 ID。 / Pending plan-approval ID.",
@@ -1047,7 +1094,7 @@ const exampleValues = {
 
 const parameterExamples = {
   channelId: "11111111-2222-4333-8444-555555555555", conversationId: "conversation-demo-001", messageId: "message-demo-001",
-  asyncTaskId: "task-demo-001", resultId: "sql-result-demo-001", shareId: 1001, planId: "plan-demo-001", questionId: "question-demo-001",
+  asyncTaskId: "task-demo-001", subagentTaskId: "subagent-task-demo-001", resultId: "sql-result-demo-001", shareId: 1001, planId: "plan-demo-001", questionId: "question-demo-001",
   fileId: 1001, referenceId: 1001, citationType: "KNOWLEDGE_BASE", current: 0, size: 30, orderBy: ["lastUpdateTime"],
   orderDirection: "DESC", orderNullHandling: "NATIVE", keyword: "quarterly", status: "COMPLETED", force: true, format: "CSV",
   Accept: "text/csv", contentMd5: "1B2M2Y8AsgTpgAmY7PhCfg==", prefix: "reports/", path: "reports/quarterly-report.pdf",

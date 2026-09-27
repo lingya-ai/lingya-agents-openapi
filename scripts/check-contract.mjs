@@ -18,8 +18,8 @@ const operations = Object.entries(yaml.paths).flatMap(([path, item]) =>
     .map(([method, operation]) => ({ path, method, operation })),
 );
 
-if (yaml.info.version !== "0.1.4") throw new Error(`Expected contract version 0.1.4, found ${yaml.info.version}`);
-if (operations.length !== 46) throw new Error(`Expected 46 operations, found ${operations.length}`);
+if (yaml.info.version !== "0.1.5") throw new Error(`Expected contract version 0.1.5, found ${yaml.info.version}`);
+if (operations.length !== 52) throw new Error(`Expected 52 operations, found ${operations.length}`);
 if (yaml.tags.length !== 10) throw new Error(`Expected 10 business groups, found ${yaml.tags.length}`);
 const ids = operations.map(({ operation }) => operation.operationId);
 if (new Set(ids).size !== ids.length) throw new Error("operationId values must be unique");
@@ -163,7 +163,7 @@ for (const [example, requestSchema, responseSchema] of legacyExamples) {
 if (html.includes("<script src=") || html.includes("fonts.googleapis.com") || html.includes("cdn.redoc.ly")) throw new Error("Generated HTML must not depend on remote runtime assets");
 for (const tag of yaml.tags) if (!html.includes(`\"name\":\"${tag.name}\"`)) throw new Error(`HTML is missing group ${tag.name}`);
 for (const id of ids) if (!html.includes(`\"operationId\":\"${id}\"`)) throw new Error(`HTML is missing operation ${id}`);
-if ((html.match(/\"x-codeSamples\"/g) ?? []).length < 46) throw new Error("HTML must embed code samples for all 46 operations");
+if ((html.match(/\"x-codeSamples\"/g) ?? []).length < 52) throw new Error("HTML must embed code samples for all 52 operations");
 for (const item of vectors.cases) if (html.includes(item.secret)) throw new Error(`Generated HTML contains a golden-vector secret: ${item.name}`);
 
 console.log(`Validated ${operations.length} operations, ${yaml.tags.length} groups, ${vectors.cases.length} HMAC vectors, and ${httpExamples.operations.length * 2} HTTP samples.`);

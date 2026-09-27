@@ -1,8 +1,8 @@
 # 灵涯 Agents OpenAPI
 Lingya Agents OpenAPI
 
-这是灵涯 Agents 渠道签名 API 的唯一 OpenAPI 3.1 契约源，覆盖 `/api/agents/channel/openapi/v1/{channelId}/chat` 基础路径下的 46 个操作，不包含 Studio 管理接口。
-This is the canonical OpenAPI 3.1 contract for the signed Lingya Agents channel API. It covers the 46 operations under `/api/agents/channel/openapi/v1/{channelId}/chat` and intentionally excludes Studio administration endpoints.
+这是灵涯 Agents 渠道签名 API 的唯一 OpenAPI 3.1 契约源，覆盖 `/api/agents/channel/openapi/v1/{channelId}/chat` 基础路径下的 52 个操作，不包含 Studio 管理接口。
+This is the canonical OpenAPI 3.1 contract for the signed Lingya Agents channel API. It covers the 52 operations under `/api/agents/channel/openapi/v1/{channelId}/chat` and intentionally excludes Studio administration endpoints.
 
 在线接口文档提供十个业务分组的使用场景、全部接口的 Raw HTTP、cURL 以及请求和响应示例：[打开在线文档](https://lingya-ai.github.io/lingya-agents-openapi/)。
 The online API reference provides use cases for all ten business groups plus Raw HTTP, cURL, request, and response examples for every operation: [open the online reference](https://lingya-ai.github.io/lingya-agents-openapi/).
@@ -22,8 +22,8 @@ The source contract is `openapi/lingya-agents-v1.yaml`; `openapi/lingya-agents-v
 请求与响应示例位于 `examples/`，确定性 HMAC 向量与 SSE 线协议样本位于 `test-vectors/`；OpenAPI Generator 通过 `openapitools.json` 固定为 7.25.0。
 Request and response examples live in `examples/`; deterministic HMAC vectors and an SSE wire sample live in `test-vectors/`. OpenAPI Generator is pinned to 7.25.0 through `openapitools.json`.
 
-`examples/http-requests.json` 是从契约生成的 46 个接口完整示例清单，禁止手工修改。
-`examples/http-requests.json` is the generated example manifest for all 46 operations and must not be edited manually.
+`examples/http-requests.json` 是从契约生成的 52 个接口完整示例清单，禁止手工修改。
+`examples/http-requests.json` is the generated example manifest for all 52 operations and must not be edited manually.
 
 `openapi/endpoints.json` 为 SDK 提供完整 operation manifest；其中 `channelId` 标记为根客户端绑定参数，不会从 HTTP 契约中删除。
 `openapi/endpoints.json` provides the complete SDK operation manifest; it marks `channelId` as root-client-bound without removing it from the HTTP contract.

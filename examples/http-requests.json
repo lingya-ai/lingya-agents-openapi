@@ -1,5 +1,5 @@
 {
-  "version": "0.1.4",
+  "version": "0.1.5",
   "baseUrl": "https://lingtong.lingya.tech",
   "warning": "Use credentials only on a trusted server. Never expose OPENAPI_SK in a browser or untrusted client.",
   "operations": [
@@ -920,6 +920,112 @@
       }
     },
     {
+      "operationId": "syncConversationAsyncTasks",
+      "group": "Messages",
+      "method": "GET",
+      "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/sync",
+      "request": {
+        "rawPath": "/api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/async-tasks/sync",
+        "rawQuery": "afterMessageId=example&size=30",
+        "contentType": "",
+        "body": null,
+        "rawHttp": "GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/async-tasks/sync?afterMessageId=example&size=30 HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/async-tasks/sync\"\nRAW_QUERY=\"afterMessageId=example&size=30\"\neval \"$(node scripts/sign-request.mjs --method GET --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --format shell)\"\n\ncurl --request GET \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\""
+      },
+      "response": {
+        "status": "200",
+        "mediaTypes": [
+          "application/json"
+        ],
+        "body": {
+          "activeTasks": [
+            {
+              "taskId": "example",
+              "taskType": "example",
+              "title": "Quarterly report summary",
+              "status": "COMPLETED",
+              "progressPercent": 0,
+              "phase": "example",
+              "statusMessage": "example",
+              "resultAvailable": true,
+              "cancellable": true,
+              "failureCode": "example",
+              "failureMessage": "example",
+              "originConversationId": "example",
+              "originMessageId": "example",
+              "originToolId": "example",
+              "originToolName": "example",
+              "targetMessageId": "example",
+              "notificationStatus": "example",
+              "notificationMessageId": "example",
+              "createdTime": "2026-01-15T08:00:00Z",
+              "startedTime": "2026-01-15T08:00:00Z",
+              "completedTime": "2026-01-15T08:00:00Z",
+              "lastUpdateTime": "2026-01-15T08:00:00Z",
+              "trackingStatus": "example",
+              "trackingFailureCode": "example",
+              "lastPollError": "example"
+            }
+          ],
+          "notificationMessages": [
+            {
+              "messageId": "message-demo-001",
+              "userMessage": {
+                "text": "example",
+                "multimodalAttachments": [
+                  {
+                    "fileName": "quarterly-report.pdf",
+                    "mimeType": "application/pdf",
+                    "data": "example"
+                  }
+                ],
+                "attachments": [
+                  {
+                    "fileId": 1001,
+                    "path": "reports/quarterly-report.pdf",
+                    "fileSize": 0,
+                    "fileName": "quarterly-report.pdf",
+                    "mimeType": "application/pdf"
+                  }
+                ],
+                "metadataRawJson": "example",
+                "executionType": "example",
+                "type": "USER"
+              },
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "totalTokens": 0,
+              "usage": {
+                "inputTokens": 0,
+                "outputTokens": 0,
+                "totalTokens": 0,
+                "inputTokenBreakdown": {
+                  "observedInputTokens": 0,
+                  "uncachedInputTokens": 0,
+                  "cachedInputTokens": 0,
+                  "cacheCreationInputTokens": 0
+                },
+                "reasoningTokens": 0,
+                "cacheHitRate": 1,
+                "inputBreakdownCoverageRate": 1
+              },
+              "executionTimeMillis": 0,
+              "processingSteps": 0,
+              "totalToolCalls": 0,
+              "status": "COMPLETED",
+              "createdTime": "2026-01-15T08:00:00Z",
+              "lastUpdateTime": "2026-01-15T08:00:00Z",
+              "executionType": "example",
+              "parentMessageId": "example"
+            }
+          ],
+          "nextMessageId": "example",
+          "hasMore": true,
+          "pollingRequired": true
+        }
+      }
+    },
+    {
       "operationId": "getConversationAsyncTask",
       "group": "Messages",
       "method": "GET",
@@ -963,6 +1069,285 @@
           "trackingStatus": "example",
           "trackingFailureCode": "example",
           "lastPollError": "example"
+        }
+      }
+    },
+    {
+      "operationId": "listConversationSubagents",
+      "group": "Messages",
+      "method": "GET",
+      "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents",
+      "request": {
+        "rawPath": "/api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents",
+        "rawQuery": "current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED",
+        "contentType": "",
+        "body": null,
+        "rawHttp": "GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents?current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents\"\nRAW_QUERY=\"current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED\"\neval \"$(node scripts/sign-request.mjs --method GET --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --format shell)\"\n\ncurl --request GET \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\""
+      },
+      "response": {
+        "status": "200",
+        "mediaTypes": [
+          "application/json"
+        ],
+        "body": {
+          "records": [
+            {
+              "taskId": "example",
+              "description": "Example generated artifact",
+              "subagentType": "example",
+              "status": "COMPLETED",
+              "phase": "example",
+              "progressPercent": 0,
+              "parentConversationId": "example",
+              "parentMessageId": "example",
+              "childConversationId": "example",
+              "childMessageId": "example",
+              "resultAvailable": true,
+              "artifactCount": 0,
+              "notificationStatus": "example",
+              "failureCode": "example",
+              "failureMessage": "example",
+              "createdTime": "2026-01-15T08:00:00Z",
+              "startedTime": "2026-01-15T08:00:00Z",
+              "completedTime": "2026-01-15T08:00:00Z",
+              "lastUpdateTime": "2026-01-15T08:00:00Z",
+              "cancellable": true
+            }
+          ],
+          "page": {
+            "current": 0,
+            "size": 0,
+            "total": 0
+          }
+        }
+      }
+    },
+    {
+      "operationId": "syncConversationSubagents",
+      "group": "Messages",
+      "method": "GET",
+      "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/sync",
+      "request": {
+        "rawPath": "/api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/sync",
+        "rawQuery": "cursor=example&size=30",
+        "contentType": "",
+        "body": null,
+        "rawHttp": "GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/sync?cursor=example&size=30 HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/sync\"\nRAW_QUERY=\"cursor=example&size=30\"\neval \"$(node scripts/sign-request.mjs --method GET --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --format shell)\"\n\ncurl --request GET \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\""
+      },
+      "response": {
+        "status": "200",
+        "mediaTypes": [
+          "application/json"
+        ],
+        "body": {
+          "activeTasks": [
+            {
+              "taskId": "example",
+              "description": "Example generated artifact",
+              "subagentType": "example",
+              "status": "COMPLETED",
+              "phase": "example",
+              "progressPercent": 0,
+              "parentConversationId": "example",
+              "parentMessageId": "example",
+              "childConversationId": "example",
+              "childMessageId": "example",
+              "resultAvailable": true,
+              "artifactCount": 0,
+              "notificationStatus": "example",
+              "failureCode": "example",
+              "failureMessage": "example",
+              "createdTime": "2026-01-15T08:00:00Z",
+              "startedTime": "2026-01-15T08:00:00Z",
+              "completedTime": "2026-01-15T08:00:00Z",
+              "lastUpdateTime": "2026-01-15T08:00:00Z",
+              "cancellable": true
+            }
+          ],
+          "changedTasks": [
+            {
+              "taskId": "example",
+              "description": "Example generated artifact",
+              "subagentType": "example",
+              "status": "COMPLETED",
+              "phase": "example",
+              "progressPercent": 0,
+              "parentConversationId": "example",
+              "parentMessageId": "example",
+              "childConversationId": "example",
+              "childMessageId": "example",
+              "resultAvailable": true,
+              "artifactCount": 0,
+              "notificationStatus": "example",
+              "failureCode": "example",
+              "failureMessage": "example",
+              "createdTime": "2026-01-15T08:00:00Z",
+              "startedTime": "2026-01-15T08:00:00Z",
+              "completedTime": "2026-01-15T08:00:00Z",
+              "lastUpdateTime": "2026-01-15T08:00:00Z",
+              "cancellable": true
+            }
+          ],
+          "nextCursor": "example",
+          "pollingRequired": true,
+          "hasUnreadTerminalResults": true
+        }
+      }
+    },
+    {
+      "operationId": "getConversationSubagent",
+      "group": "Messages",
+      "method": "GET",
+      "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}",
+      "request": {
+        "rawPath": "/api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001",
+        "rawQuery": "",
+        "contentType": "",
+        "body": null,
+        "rawHttp": "GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001 HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001\"\nRAW_QUERY=\"\"\neval \"$(node scripts/sign-request.mjs --method GET --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --format shell)\"\n\ncurl --request GET \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\""
+      },
+      "response": {
+        "status": "200",
+        "mediaTypes": [
+          "application/json"
+        ],
+        "body": {
+          "taskId": "example",
+          "description": "Example generated artifact",
+          "subagentType": "example",
+          "status": "COMPLETED",
+          "phase": "example",
+          "progressPercent": 0,
+          "parentConversationId": "example",
+          "parentMessageId": "example",
+          "childConversationId": "example",
+          "childMessageId": "example",
+          "resultAvailable": true,
+          "artifactCount": 0,
+          "notificationStatus": "example",
+          "failureCode": "example",
+          "failureMessage": "example",
+          "createdTime": "2026-01-15T08:00:00Z",
+          "startedTime": "2026-01-15T08:00:00Z",
+          "completedTime": "2026-01-15T08:00:00Z",
+          "lastUpdateTime": "2026-01-15T08:00:00Z",
+          "cancellable": true
+        }
+      }
+    },
+    {
+      "operationId": "cancelConversationSubagent",
+      "group": "Messages",
+      "method": "DELETE",
+      "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}",
+      "request": {
+        "rawPath": "/api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001",
+        "rawQuery": "",
+        "contentType": "",
+        "body": null,
+        "rawHttp": "DELETE /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001 HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001\"\nRAW_QUERY=\"\"\neval \"$(node scripts/sign-request.mjs --method DELETE --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --format shell)\"\n\ncurl --request DELETE \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\""
+      },
+      "response": {
+        "status": "200",
+        "mediaTypes": [
+          "application/json"
+        ],
+        "body": {
+          "taskId": "example",
+          "description": "Example generated artifact",
+          "subagentType": "example",
+          "status": "COMPLETED",
+          "phase": "example",
+          "progressPercent": 0,
+          "parentConversationId": "example",
+          "parentMessageId": "example",
+          "childConversationId": "example",
+          "childMessageId": "example",
+          "resultAvailable": true,
+          "artifactCount": 0,
+          "notificationStatus": "example",
+          "failureCode": "example",
+          "failureMessage": "example",
+          "createdTime": "2026-01-15T08:00:00Z",
+          "startedTime": "2026-01-15T08:00:00Z",
+          "completedTime": "2026-01-15T08:00:00Z",
+          "lastUpdateTime": "2026-01-15T08:00:00Z",
+          "cancellable": true
+        }
+      }
+    },
+    {
+      "operationId": "getConversationSubagentResult",
+      "group": "Messages",
+      "method": "GET",
+      "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}/result",
+      "request": {
+        "rawPath": "/api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001/result",
+        "rawQuery": "",
+        "contentType": "",
+        "body": null,
+        "rawHttp": "GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001/result HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001/result\"\nRAW_QUERY=\"\"\neval \"$(node scripts/sign-request.mjs --method GET --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --format shell)\"\n\ncurl --request GET \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\""
+      },
+      "response": {
+        "status": "200",
+        "mediaTypes": [
+          "application/json"
+        ],
+        "body": {
+          "task": {
+            "taskId": "example",
+            "description": "Example generated artifact",
+            "subagentType": "example",
+            "status": "COMPLETED",
+            "phase": "example",
+            "progressPercent": 0,
+            "parentConversationId": "example",
+            "parentMessageId": "example",
+            "childConversationId": "example",
+            "childMessageId": "example",
+            "resultAvailable": true,
+            "artifactCount": 0,
+            "notificationStatus": "example",
+            "failureCode": "example",
+            "failureMessage": "example",
+            "createdTime": "2026-01-15T08:00:00Z",
+            "startedTime": "2026-01-15T08:00:00Z",
+            "completedTime": "2026-01-15T08:00:00Z",
+            "lastUpdateTime": "2026-01-15T08:00:00Z",
+            "cancellable": true
+          },
+          "resultText": "example",
+          "artifacts": [
+            {
+              "artifactId": "example",
+              "name": "example",
+              "mimeType": "application/pdf",
+              "size": 0,
+              "relativePath": "example",
+              "deliveryStatus": "NOT_APPLICABLE",
+              "issueCodes": [
+                "example"
+              ],
+              "recoverable": true
+            }
+          ],
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "nonFileArtifacts": [
+            {
+              "artifactId": 1,
+              "kind": "FILE",
+              "title": "Quarterly report summary",
+              "description": "Example generated artifact",
+              "lastUpdateTime": "2026-01-15T08:00:00Z",
+              "previewUrl": "https://objects.example.com/preview/example"
+            }
+          ]
         }
       }
     },
@@ -1586,7 +1971,7 @@
           },
           "nonFileArtifacts": [
             {
-              "artifactId": "example",
+              "artifactId": 1,
               "kind": "FILE",
               "title": "Quarterly report summary",
               "description": "Example generated artifact",

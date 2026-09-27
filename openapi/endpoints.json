@@ -1325,6 +1325,71 @@
   },
   {
     "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/sync",
+    "relativePath": "/conversations/{conversationId}/async-tasks/sync",
+    "operationId": "syncConversationAsyncTasks",
+    "group": "messages",
+    "summary": "增量同步异步任务 / Sync asynchronous task updates",
+    "description": "### 使用场景\n增量读取活动异步任务和游标之后的通知消息。\n\n### Use case\nIncrementally read active asynchronous tasks and notification messages after a cursor.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读；返回活动任务、通知消息和下一消息游标。\n\n### Behavior and side effects\nRead-only; returns active tasks, notification messages, and the next message cursor.\n\n### 后续调用\n保存 nextMessageId；pollingRequired 为 true 时继续同步。\n\n### Next step\nSave nextMessageId and continue syncing when pollingRequired is true.\n\n### 接口摘要\n增量同步异步任务 / Sync asynchronous task updates\n\n### Operation summary\n增量同步异步任务 / Sync asynchronous task updates",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "afterMessageId",
+        "in": "query",
+        "required": false,
+        "description": "通知消息同步游标。 / Notification-message sync cursor.",
+        "schema": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 50
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AgentAsyncTaskSync",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/{asyncTaskId}",
     "relativePath": "/conversations/{conversationId}/async-tasks/{asyncTaskId}",
     "operationId": "getConversationAsyncTask",
@@ -1371,6 +1436,361 @@
       "status": "200",
       "mediaType": "application/json",
       "schema": "AsyncTask",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents",
+    "relativePath": "/conversations/{conversationId}/subagents",
+    "operationId": "listConversationSubagents",
+    "group": "messages",
+    "summary": "分页查询子 Agent 任务 / List subagent tasks",
+    "description": "### 使用场景\n分页查看当前会话创建的子 Agent 任务。\n\n### Use case\nList subagent tasks created by the current conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读；返回任务状态分页。\n\n### Behavior and side effects\nRead-only; returns a paged task status list.\n\n### 后续调用\n读取单个任务详情，或同步状态变化。\n\n### Next step\nRead an individual task or synchronize status changes.\n\n### 接口摘要\n分页查询子 Agent 任务 / List subagent tasks\n\n### Operation summary\n分页查询子 Agent 任务 / List subagent tasks",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "current",
+        "in": "query",
+        "required": false,
+        "description": "从 0 开始的页码。 / Zero-based page index.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 1000,
+          "default": 30
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderBy",
+        "in": "query",
+        "required": false,
+        "description": "排序字段列表。 / Ordered list of sort fields.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderDirection",
+        "in": "query",
+        "required": false,
+        "description": "排序方向。 / Sort direction.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "orderNullHandling",
+        "in": "query",
+        "required": false,
+        "description": "空值排序策略。 / Null ordering strategy.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "NATIVE",
+            "NULLS_FIRST",
+            "NULLS_LAST"
+          ],
+          "default": "NATIVE"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "keyword",
+        "in": "query",
+        "required": false,
+        "description": "标题或正文检索关键字。 / Title or content search keyword.",
+        "schema": {
+          "type": "string"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "状态过滤条件。 / Status filter.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "SubagentTaskPage",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/sync",
+    "relativePath": "/conversations/{conversationId}/subagents/sync",
+    "operationId": "syncConversationSubagents",
+    "group": "messages",
+    "summary": "增量同步子 Agent 状态 / Sync subagent task updates",
+    "description": "### 使用场景\n通过游标增量读取子 Agent 状态和未读终态结果。\n\n### Use case\nIncrementally read subagent status changes and unread terminal results using a cursor.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读；游标应原样保存并用于下一次同步。\n\n### Behavior and side effects\nRead-only; preserve the cursor unchanged for the next sync.\n\n### 后续调用\n保存 nextCursor；pollingRequired 为 true 时继续同步。\n\n### Next step\nSave nextCursor and continue syncing when pollingRequired is true.\n\n### 接口摘要\n增量同步子 Agent 状态 / Sync subagent task updates\n\n### Operation summary\n增量同步子 Agent 状态 / Sync subagent task updates",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "子 Agent 状态同步游标。 / Subagent-state sync cursor.",
+        "schema": {
+          "type": "string",
+          "maxLength": 1048576
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 50
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "SubagentTaskSync",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}",
+    "relativePath": "/conversations/{conversationId}/subagents/{subagentTaskId}",
+    "operationId": "getConversationSubagent",
+    "group": "messages",
+    "summary": "读取子 Agent 状态 / Get a subagent task",
+    "description": "### 使用场景\n读取当前会话下一个子 Agent 的状态和结果可用性。\n\n### Use case\nRead one subagent's status and result availability under the current conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\nresultAvailable 为 true 时读取结果接口。\n\n### Next step\nRead the result endpoint when resultAvailable is true.\n\n### 接口摘要\n读取子 Agent 状态 / Get a subagent task\n\n### Operation summary\n读取子 Agent 状态 / Get a subagent task",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "subagentTaskId",
+        "in": "path",
+        "required": true,
+        "description": "子 Agent 任务 ID。 / Subagent task ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "SubagentTask",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}",
+    "relativePath": "/conversations/{conversationId}/subagents/{subagentTaskId}",
+    "operationId": "cancelConversationSubagent",
+    "group": "messages",
+    "summary": "取消子 Agent 任务 / Cancel a subagent task",
+    "description": "### 使用场景\n取消当前会话下仍可取消的子 Agent 任务。\n\n### Use case\nCancel a subagent task that is still cancellable under the current conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n请求取消任务并返回最新任务状态。\n\n### Behavior and side effects\nRequests cancellation and returns the latest task status.\n\n### 后续调用\n读取返回状态，并继续同步其他任务。\n\n### Next step\nUse the returned status and continue syncing other tasks.\n\n### 接口摘要\n取消子 Agent 任务 / Cancel a subagent task\n\n### Operation summary\n取消子 Agent 任务 / Cancel a subagent task",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "subagentTaskId",
+        "in": "path",
+        "required": true,
+        "description": "子 Agent 任务 ID。 / Subagent task ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "SubagentTask",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}/result",
+    "relativePath": "/conversations/{conversationId}/subagents/{subagentTaskId}/result",
+    "operationId": "getConversationSubagentResult",
+    "group": "messages",
+    "summary": "读取子 Agent 结果 / Get a subagent result",
+    "description": "### 使用场景\n按需读取已完成子 Agent 的文本、文件和非文件制品。\n\n### Use case\nRead a completed subagent's text, file artifacts, and non-file artifacts on demand.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读；完整结果仅通过该接口按需返回。\n\n### Behavior and side effects\nRead-only; the full result is returned only on demand through this endpoint.\n\n### 后续调用\n按制品类型展示结果，并处理可恢复交付物。\n\n### Next step\nDisplay results by artifact type and handle recoverable deliverables.\n\n### 接口摘要\n读取子 Agent 结果 / Get a subagent result\n\n### Operation summary\n读取子 Agent 结果 / Get a subagent result",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "subagentTaskId",
+        "in": "path",
+        "required": true,
+        "description": "子 Agent 任务 ID。 / Subagent task ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "SubagentTaskResult",
       "format": null
     },
     "sse": false

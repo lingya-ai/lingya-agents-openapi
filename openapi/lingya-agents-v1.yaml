@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Lingya Agents OpenAPI
-  version: 0.1.4
+  version: 0.1.5
   description: |-
     本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，使用 OPENAPI-HMAC-SHA256-V1 验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。
 
@@ -3329,6 +3329,196 @@ paths:
               -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
               -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
               -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/sync:
+    get:
+      operationId: syncConversationAsyncTasks
+      tags:
+        - Messages
+      summary: 增量同步异步任务 / Sync asynchronous task updates
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: afterMessageId
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 64
+          description: 通知消息同步游标。 / Notification-message sync cursor.
+          example: example
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 50
+          description: 单页记录数。 / Number of records per page.
+          example: 30
+      responses:
+        "200":
+          description: 增量同步异步任务 / Sync asynchronous task updates 的成功响应。 / Successful response for syncConversationAsyncTasks.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentAsyncTaskSync"
+              example:
+                activeTasks:
+                  - taskId: example
+                    taskType: example
+                    title: Quarterly report summary
+                    status: COMPLETED
+                    progressPercent: 0
+                    phase: example
+                    statusMessage: example
+                    resultAvailable: true
+                    cancellable: true
+                    failureCode: example
+                    failureMessage: example
+                    originConversationId: example
+                    originMessageId: example
+                    originToolId: example
+                    originToolName: example
+                    targetMessageId: example
+                    notificationStatus: example
+                    notificationMessageId: example
+                    createdTime: 2026-01-15T08:00:00Z
+                    startedTime: 2026-01-15T08:00:00Z
+                    completedTime: 2026-01-15T08:00:00Z
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+                    trackingStatus: example
+                    trackingFailureCode: example
+                    lastPollError: example
+                notificationMessages:
+                  - messageId: message-demo-001
+                    userMessage:
+                      text: example
+                      multimodalAttachments:
+                        - fileName: quarterly-report.pdf
+                          mimeType: application/pdf
+                          data: example
+                      attachments:
+                        - fileId: 1001
+                          path: reports/quarterly-report.pdf
+                          fileSize: 0
+                          fileName: quarterly-report.pdf
+                          mimeType: application/pdf
+                      metadataRawJson: example
+                      executionType: example
+                      type: USER
+                    inputTokens: 0
+                    outputTokens: 0
+                    totalTokens: 0
+                    usage:
+                      inputTokens: 0
+                      outputTokens: 0
+                      totalTokens: 0
+                      inputTokenBreakdown:
+                        observedInputTokens: 0
+                        uncachedInputTokens: 0
+                        cachedInputTokens: 0
+                        cacheCreationInputTokens: 0
+                      reasoningTokens: 0
+                      cacheHitRate: 1
+                      inputBreakdownCoverageRate: 1
+                    executionTimeMillis: 0
+                    processingSteps: 0
+                    totalToolCalls: 0
+                    status: COMPLETED
+                    createdTime: 2026-01-15T08:00:00Z
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+                    executionType: example
+                    parentMessageId: example
+                nextMessageId: example
+                hasMore: true
+                pollingRequired: true
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        增量读取活动异步任务和游标之后的通知消息。
+
+        ### Use case
+        Incrementally read active asynchronous tasks and notification messages after a cursor.
+
+        ### 前置条件
+        渠道凭证和外部用户已配置，目标资源属于当前用户。
+
+        ### Prerequisites
+        Channel credentials and the external user are configured, and the target resource belongs to that user.
+
+        ### 行为与副作用
+        只读；返回活动任务、通知消息和下一消息游标。
+
+        ### Behavior and side effects
+        Read-only; returns active tasks, notification messages, and the next message cursor.
+
+        ### 后续调用
+        保存 nextMessageId；pollingRequired 为 true 时继续同步。
+
+        ### Next step
+        Save nextMessageId and continue syncing when pollingRequired is true.
+
+        ### 接口摘要
+        增量同步异步任务 / Sync asynchronous task updates
+
+        ### Operation summary
+        增量同步异步任务 / Sync asynchronous task updates
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/async-tasks/sync?afterMessageId=example&size=30 HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/async-tasks/sync"
+            RAW_QUERY="afterMessageId=example&size=30"
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
   /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/async-tasks/{asyncTaskId}:
     get:
       operationId: getConversationAsyncTask
@@ -3456,6 +3646,729 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/async-tasks/task-demo-001"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents:
+    get:
+      operationId: listConversationSubagents
+      tags:
+        - Messages
+      summary: 分页查询子 Agent 任务 / List subagent tasks
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - *a1
+        - *a2
+        - *a3
+        - *a4
+        - *a5
+        - *a6
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: 状态过滤条件。 / Status filter.
+          example:
+            - COMPLETED
+      responses:
+        "200":
+          description: 分页查询子 Agent 任务 / List subagent tasks 的成功响应。 / Successful response for listConversationSubagents.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubagentTaskPage"
+              example:
+                records:
+                  - taskId: example
+                    description: Example generated artifact
+                    subagentType: example
+                    status: COMPLETED
+                    phase: example
+                    progressPercent: 0
+                    parentConversationId: example
+                    parentMessageId: example
+                    childConversationId: example
+                    childMessageId: example
+                    resultAvailable: true
+                    artifactCount: 0
+                    notificationStatus: example
+                    failureCode: example
+                    failureMessage: example
+                    createdTime: 2026-01-15T08:00:00Z
+                    startedTime: 2026-01-15T08:00:00Z
+                    completedTime: 2026-01-15T08:00:00Z
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+                    cancellable: true
+                page:
+                  current: 0
+                  size: 0
+                  total: 0
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        分页查看当前会话创建的子 Agent 任务。
+
+        ### Use case
+        List subagent tasks created by the current conversation.
+
+        ### 前置条件
+        渠道凭证和外部用户已配置，目标资源属于当前用户。
+
+        ### Prerequisites
+        Channel credentials and the external user are configured, and the target resource belongs to that user.
+
+        ### 行为与副作用
+        只读；返回任务状态分页。
+
+        ### Behavior and side effects
+        Read-only; returns a paged task status list.
+
+        ### 后续调用
+        读取单个任务详情，或同步状态变化。
+
+        ### Next step
+        Read an individual task or synchronize status changes.
+
+        ### 接口摘要
+        分页查询子 Agent 任务 / List subagent tasks
+
+        ### Operation summary
+        分页查询子 Agent 任务 / List subagent tasks
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents?current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents"
+            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED"
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/sync:
+    get:
+      operationId: syncConversationSubagents
+      tags:
+        - Messages
+      summary: 增量同步子 Agent 状态 / Sync subagent task updates
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 1048576
+          description: 子 Agent 状态同步游标。 / Subagent-state sync cursor.
+          example: example
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+          description: 单页记录数。 / Number of records per page.
+          example: 30
+      responses:
+        "200":
+          description: 增量同步子 Agent 状态 / Sync subagent task updates 的成功响应。 / Successful response for syncConversationSubagents.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubagentTaskSync"
+              example:
+                activeTasks:
+                  - taskId: example
+                    description: Example generated artifact
+                    subagentType: example
+                    status: COMPLETED
+                    phase: example
+                    progressPercent: 0
+                    parentConversationId: example
+                    parentMessageId: example
+                    childConversationId: example
+                    childMessageId: example
+                    resultAvailable: true
+                    artifactCount: 0
+                    notificationStatus: example
+                    failureCode: example
+                    failureMessage: example
+                    createdTime: 2026-01-15T08:00:00Z
+                    startedTime: 2026-01-15T08:00:00Z
+                    completedTime: 2026-01-15T08:00:00Z
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+                    cancellable: true
+                changedTasks:
+                  - taskId: example
+                    description: Example generated artifact
+                    subagentType: example
+                    status: COMPLETED
+                    phase: example
+                    progressPercent: 0
+                    parentConversationId: example
+                    parentMessageId: example
+                    childConversationId: example
+                    childMessageId: example
+                    resultAvailable: true
+                    artifactCount: 0
+                    notificationStatus: example
+                    failureCode: example
+                    failureMessage: example
+                    createdTime: 2026-01-15T08:00:00Z
+                    startedTime: 2026-01-15T08:00:00Z
+                    completedTime: 2026-01-15T08:00:00Z
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+                    cancellable: true
+                nextCursor: example
+                pollingRequired: true
+                hasUnreadTerminalResults: true
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        通过游标增量读取子 Agent 状态和未读终态结果。
+
+        ### Use case
+        Incrementally read subagent status changes and unread terminal results using a cursor.
+
+        ### 前置条件
+        渠道凭证和外部用户已配置，目标资源属于当前用户。
+
+        ### Prerequisites
+        Channel credentials and the external user are configured, and the target resource belongs to that user.
+
+        ### 行为与副作用
+        只读；游标应原样保存并用于下一次同步。
+
+        ### Behavior and side effects
+        Read-only; preserve the cursor unchanged for the next sync.
+
+        ### 后续调用
+        保存 nextCursor；pollingRequired 为 true 时继续同步。
+
+        ### Next step
+        Save nextCursor and continue syncing when pollingRequired is true.
+
+        ### 接口摘要
+        增量同步子 Agent 状态 / Sync subagent task updates
+
+        ### Operation summary
+        增量同步子 Agent 状态 / Sync subagent task updates
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/sync?cursor=example&size=30 HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/sync"
+            RAW_QUERY="cursor=example&size=30"
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}:
+    get:
+      operationId: getConversationSubagent
+      tags:
+        - Messages
+      summary: 读取子 Agent 状态 / Get a subagent task
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: subagentTaskId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 子 Agent 任务 ID。 / Subagent task ID.
+          example: subagent-task-demo-001
+      responses:
+        "200":
+          description: 读取子 Agent 状态 / Get a subagent task 的成功响应。 / Successful response for getConversationSubagent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubagentTask"
+              example:
+                taskId: example
+                description: Example generated artifact
+                subagentType: example
+                status: COMPLETED
+                phase: example
+                progressPercent: 0
+                parentConversationId: example
+                parentMessageId: example
+                childConversationId: example
+                childMessageId: example
+                resultAvailable: true
+                artifactCount: 0
+                notificationStatus: example
+                failureCode: example
+                failureMessage: example
+                createdTime: 2026-01-15T08:00:00Z
+                startedTime: 2026-01-15T08:00:00Z
+                completedTime: 2026-01-15T08:00:00Z
+                lastUpdateTime: 2026-01-15T08:00:00Z
+                cancellable: true
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        读取当前会话下一个子 Agent 的状态和结果可用性。
+
+        ### Use case
+        Read one subagent's status and result availability under the current conversation.
+
+        ### 前置条件
+        渠道凭证和外部用户已配置，目标资源属于当前用户。
+
+        ### Prerequisites
+        Channel credentials and the external user are configured, and the target resource belongs to that user.
+
+        ### 行为与副作用
+        只读。
+
+        ### Behavior and side effects
+        Read-only.
+
+        ### 后续调用
+        resultAvailable 为 true 时读取结果接口。
+
+        ### Next step
+        Read the result endpoint when resultAvailable is true.
+
+        ### 接口摘要
+        读取子 Agent 状态 / Get a subagent task
+
+        ### Operation summary
+        读取子 Agent 状态 / Get a subagent task
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001 HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+    delete:
+      operationId: cancelConversationSubagent
+      tags:
+        - Messages
+      summary: 取消子 Agent 任务 / Cancel a subagent task
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: subagentTaskId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 子 Agent 任务 ID。 / Subagent task ID.
+          example: subagent-task-demo-001
+      responses:
+        "200":
+          description: 取消子 Agent 任务 / Cancel a subagent task 的成功响应。 / Successful response for cancelConversationSubagent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubagentTask"
+              example:
+                taskId: example
+                description: Example generated artifact
+                subagentType: example
+                status: COMPLETED
+                phase: example
+                progressPercent: 0
+                parentConversationId: example
+                parentMessageId: example
+                childConversationId: example
+                childMessageId: example
+                resultAvailable: true
+                artifactCount: 0
+                notificationStatus: example
+                failureCode: example
+                failureMessage: example
+                createdTime: 2026-01-15T08:00:00Z
+                startedTime: 2026-01-15T08:00:00Z
+                completedTime: 2026-01-15T08:00:00Z
+                lastUpdateTime: 2026-01-15T08:00:00Z
+                cancellable: true
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        取消当前会话下仍可取消的子 Agent 任务。
+
+        ### Use case
+        Cancel a subagent task that is still cancellable under the current conversation.
+
+        ### 前置条件
+        渠道凭证和外部用户已配置，目标资源属于当前用户。
+
+        ### Prerequisites
+        Channel credentials and the external user are configured, and the target resource belongs to that user.
+
+        ### 行为与副作用
+        请求取消任务并返回最新任务状态。
+
+        ### Behavior and side effects
+        Requests cancellation and returns the latest task status.
+
+        ### 后续调用
+        读取返回状态，并继续同步其他任务。
+
+        ### Next step
+        Use the returned status and continue syncing other tasks.
+
+        ### 接口摘要
+        取消子 Agent 任务 / Cancel a subagent task
+
+        ### Operation summary
+        取消子 Agent 任务 / Cancel a subagent task
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            DELETE /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001 HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method DELETE --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request DELETE "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/subagents/{subagentTaskId}/result:
+    get:
+      operationId: getConversationSubagentResult
+      tags:
+        - Messages
+      summary: 读取子 Agent 结果 / Get a subagent result
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: subagentTaskId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 子 Agent 任务 ID。 / Subagent task ID.
+          example: subagent-task-demo-001
+      responses:
+        "200":
+          description: 读取子 Agent 结果 / Get a subagent result 的成功响应。 / Successful response for getConversationSubagentResult.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubagentTaskResult"
+              example:
+                task:
+                  taskId: example
+                  description: Example generated artifact
+                  subagentType: example
+                  status: COMPLETED
+                  phase: example
+                  progressPercent: 0
+                  parentConversationId: example
+                  parentMessageId: example
+                  childConversationId: example
+                  childMessageId: example
+                  resultAvailable: true
+                  artifactCount: 0
+                  notificationStatus: example
+                  failureCode: example
+                  failureMessage: example
+                  createdTime: 2026-01-15T08:00:00Z
+                  startedTime: 2026-01-15T08:00:00Z
+                  completedTime: 2026-01-15T08:00:00Z
+                  lastUpdateTime: 2026-01-15T08:00:00Z
+                  cancellable: true
+                resultText: example
+                artifacts:
+                  - artifactId: example
+                    name: example
+                    mimeType: application/pdf
+                    size: 0
+                    relativePath: example
+                    deliveryStatus: NOT_APPLICABLE
+                    issueCodes:
+                      - example
+                    recoverable: true
+                inputTokens: 0
+                outputTokens: 0
+                nonFileArtifacts:
+                  - artifactId: 1
+                    kind: FILE
+                    title: Quarterly report summary
+                    description: Example generated artifact
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+                    previewUrl: https://objects.example.com/preview/example
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        按需读取已完成子 Agent 的文本、文件和非文件制品。
+
+        ### Use case
+        Read a completed subagent's text, file artifacts, and non-file artifacts on demand.
+
+        ### 前置条件
+        渠道凭证和外部用户已配置，目标资源属于当前用户。
+
+        ### Prerequisites
+        Channel credentials and the external user are configured, and the target resource belongs to that user.
+
+        ### 行为与副作用
+        只读；完整结果仅通过该接口按需返回。
+
+        ### Behavior and side effects
+        Read-only; the full result is returned only on demand through this endpoint.
+
+        ### 后续调用
+        按制品类型展示结果，并处理可恢复交付物。
+
+        ### Next step
+        Display results by artifact type and handle recoverable deliverables.
+
+        ### 接口摘要
+        读取子 Agent 结果 / Get a subagent result
+
+        ### Operation summary
+        读取子 Agent 结果 / Get a subagent result
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001/result HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/subagent-task-demo-001/result"
             RAW_QUERY=""
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
@@ -5737,7 +6650,7 @@ paths:
                     size: 0
                     total: 0
                 nonFileArtifacts:
-                  - artifactId: example
+                  - artifactId: 1
                     kind: FILE
                     title: Quarterly report summary
                     description: Example generated artifact
@@ -7876,6 +8789,279 @@ components:
           type: string
           description: 字段 data / data field。
       description: MultimodalMediaAttachment 的公开协议结构。 / Public contract for multimodal media attachment.
+    AgentAsyncTaskSync:
+      type: object
+      additionalProperties: false
+      required:
+        - activeTasks
+        - notificationMessages
+        - nextMessageId
+        - hasMore
+        - pollingRequired
+      properties:
+        activeTasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/AsyncTask"
+          description: 字段 activeTasks / active tasks field。
+        notificationMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationMessage"
+          description: 字段 notificationMessages / notification messages field。
+        nextMessageId:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 nextMessageId / next message id field。
+        hasMore:
+          type: boolean
+          description: 字段 hasMore / has more field。
+        pollingRequired:
+          type: boolean
+          description: 字段 pollingRequired / polling required field。
+      description: AgentAsyncTaskSync 的公开协议结构。 / Public contract for agent async task sync.
+    SubagentTask:
+      type: object
+      additionalProperties: false
+      required:
+        - taskId
+        - description
+        - subagentType
+        - status
+        - parentConversationId
+        - parentMessageId
+        - resultAvailable
+        - artifactCount
+        - notificationStatus
+        - createdTime
+        - lastUpdateTime
+        - cancellable
+      properties:
+        taskId:
+          type: string
+          description: 异步任务 ID / asynchronous task ID。
+        description:
+          type: string
+          description: 可读说明 / human-readable description。
+        subagentType:
+          type: string
+          description: 字段 subagentType / subagent type field。
+        status:
+          type: string
+          description: 当前状态 / current status。
+        phase:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 phase / phase field。
+        progressPercent:
+          oneOf:
+            - type: integer
+              format: int32
+              minimum: 0
+              maximum: 100
+            - type: "null"
+          description: 字段 progressPercent / progress percent field。
+        parentConversationId:
+          type: string
+          description: 字段 parentConversationId / parent conversation id field。
+        parentMessageId:
+          type: string
+          description: 字段 parentMessageId / parent message id field。
+        childConversationId:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 childConversationId / child conversation id field。
+        childMessageId:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 childMessageId / child message id field。
+        resultAvailable:
+          type: boolean
+          description: 字段 resultAvailable / result available field。
+        artifactCount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: 字段 artifactCount / artifact count field。
+        notificationStatus:
+          type: string
+          description: 字段 notificationStatus / notification status field。
+        failureCode:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 failureCode / failure code field。
+        failureMessage:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 failureMessage / failure message field。
+        createdTime:
+          type: string
+          format: date-time
+          description: 创建时间 / creation time。
+        startedTime:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: "null"
+          description: 字段 startedTime / started time field。
+        completedTime:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: "null"
+          description: 字段 completedTime / completed time field。
+        lastUpdateTime:
+          type: string
+          format: date-time
+          description: 最后更新时间 / last update time。
+        cancellable:
+          type: boolean
+          description: 字段 cancellable / cancellable field。
+      description: SubagentTask 的公开协议结构。 / Public contract for subagent task.
+    SubagentTaskPage:
+      type: object
+      additionalProperties: false
+      required:
+        - records
+        - page
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubagentTask"
+          description: 记录列表 / records。
+        page:
+          $ref: "#/components/schemas/PageInfo"
+          description: 分页信息 / page metadata。
+      description: SubagentTaskPage 的公开协议结构。 / Public contract for subagent task page.
+    SubagentTaskSync:
+      type: object
+      additionalProperties: false
+      required:
+        - activeTasks
+        - changedTasks
+        - nextCursor
+        - pollingRequired
+        - hasUnreadTerminalResults
+      properties:
+        activeTasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubagentTask"
+          description: 字段 activeTasks / active tasks field。
+        changedTasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubagentTask"
+          description: 字段 changedTasks / changed tasks field。
+        nextCursor:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 nextCursor / next cursor field。
+        pollingRequired:
+          type: boolean
+          description: 字段 pollingRequired / polling required field。
+        hasUnreadTerminalResults:
+          type: boolean
+          description: 字段 hasUnreadTerminalResults / has unread terminal results field。
+      description: SubagentTaskSync 的公开协议结构。 / Public contract for subagent task sync.
+    SubagentTaskArtifact:
+      type: object
+      additionalProperties: false
+      required:
+        - artifactId
+        - name
+        - deliveryStatus
+        - issueCodes
+        - recoverable
+      properties:
+        artifactId:
+          type: string
+          description: 字段 artifactId / artifact id field。
+        name:
+          type: string
+          description: 字段 name / name field。
+        mimeType:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: MIME 类型 / MIME type。
+        size:
+          oneOf:
+            - type: integer
+              format: int64
+              minimum: 0
+            - type: "null"
+          description: 大小（字节）或分页容量 / byte size or page size。
+        relativePath:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 relativePath / relative path field。
+        deliveryStatus:
+          type: string
+          enum:
+            - NOT_APPLICABLE
+            - UNVALIDATED
+            - ACCEPTED
+            - ACCEPTED_WITH_WARNINGS
+            - BLOCKED
+          description: 字段 deliveryStatus / delivery status field。
+        issueCodes:
+          type: array
+          items:
+            type: string
+          description: 字段 issueCodes / issue codes field。
+        recoverable:
+          type: boolean
+          description: 字段 recoverable / recoverable field。
+      description: SubagentTaskArtifact 的公开协议结构。 / Public contract for subagent task artifact.
+    SubagentTaskResult:
+      type: object
+      additionalProperties: false
+      required:
+        - task
+        - artifacts
+        - inputTokens
+        - outputTokens
+        - nonFileArtifacts
+      properties:
+        task:
+          $ref: "#/components/schemas/SubagentTask"
+          description: 字段 task / task field。
+        resultText:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 resultText / result text field。
+        artifacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubagentTaskArtifact"
+          description: 字段 artifacts / artifacts field。
+        inputTokens:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 输入 Token 数 / input token count。
+        outputTokens:
+          type: integer
+          format: int64
+          minimum: 0
+          description: 输出 Token 数 / output token count。
+        nonFileArtifacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceNonFileArtifact"
+          description: 字段 nonFileArtifacts / non file artifacts field。
+      description: SubagentTaskResult 的公开协议结构。 / Public contract for subagent task result.
     WorkspaceFile:
       type: object
       additionalProperties: false
@@ -7912,10 +9098,12 @@ components:
         - artifactId
         - kind
         - title
+        - description
         - lastUpdateTime
       properties:
         artifactId:
-          type: string
+          type: integer
+          format: int64
           description: 字段 artifactId / artifact id field。
         kind:
           type: string
@@ -7924,9 +9112,7 @@ components:
           type: string
           description: 标题 / title。
         description:
-          oneOf:
-            - type: string
-            - type: "null"
+          type: string
           description: 可读说明 / human-readable description。
         lastUpdateTime:
           type: string

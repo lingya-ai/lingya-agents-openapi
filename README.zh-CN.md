@@ -1,6 +1,6 @@
 # Lingya Agents OpenAPI 契约
 
-本仓库是 Lingya Agents HMAC 公共渠道接口的唯一 OpenAPI 3.1 契约源，覆盖 `/api/agents/channel/openapi/v1/{channelId}/chat` 下的 46 个操作，不包含使用 Studio JWT 的管理接口。
+本仓库是 Lingya Agents HMAC 公共渠道接口的唯一 OpenAPI 3.1 契约源，覆盖 `/api/agents/channel/openapi/v1/{channelId}/chat` 下的 52 个操作，不包含使用 Studio JWT 的管理接口。
 
 在线接口文档位于 <https://lingya-ai.github.io/lingya-agents-openapi/>，提供十个业务分组的使用场景以及全部接口的 Raw HTTP、cURL、请求和响应示例。
 

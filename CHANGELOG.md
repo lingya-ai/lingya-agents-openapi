@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.5 - 2026-09-27
+
+- Add asynchronous-task sync and subagent list, sync, detail, result, and cancellation operations.
+- Correct the workspace non-file artifact schema to match the server DTO.
+
 ## 0.1.4 - 2026-09-16
 
 - Add bilingual use-case guides for all ten API groups and structured guidance for all 46 operations.
