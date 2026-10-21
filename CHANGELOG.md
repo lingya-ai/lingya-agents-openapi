@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.7 - 2026-10-20
+
+- Centralize four SDK runtimes, facade generators, templates and shared lifecycle vectors; add deterministic generation manifests and full-source CI checks.
+- Describe WebSocket handshake/control frames with x-lingya-websocket and generate transports.json.
+- Clarify single-use token consumption, ten-minute expiry, identity binding, and fresh-token requirements for requests, retries, and stream reconnections.
+- Align all 64 HTTP operations with the latest channel controller and document token authentication and WebSocket transport.
+- Correct request limits, modes, pagination, metadata and title responses; remove unavailable sharing and internal model events.
+
 ## Unreleased
 
 - Add a left-navigation signing guide for clients that call the API with raw HTTP.

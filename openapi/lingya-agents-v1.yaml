@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
   title: Lingya Agents OpenAPI
-  version: 0.1.5
+  version: 0.1.7
   description: |-
-    本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，使用 OPENAPI-HMAC-SHA256-V1 验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。
+    本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，支持 OPENAPI-HMAC-SHA256-V1 签名或短期渠道令牌验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。
 
-    This contract describes the public Lingya Agents channel API for trusted servers. Requests use OPENAPI-HMAC-SHA256-V1, and Studio administration endpoints are excluded. The online reference only displays requests and never collects or stores a secret in the browser.
+    This contract describes the public Lingya Agents channel API for trusted servers. Requests use OPENAPI-HMAC-SHA256-V1 or short-lived channel tokens, and Studio administration endpoints are excluded. The online reference only displays requests and never collects or stores a secret in the browser.
 
     ## 快速开始 / Quick start
 
@@ -65,6 +65,10 @@ info:
     `401` 签名、时间戳或 nonce 无效；`403` 资源不属于当前渠道用户；`413` 请求体过大；`422` 参数校验失败；`429` 请求过于频繁；`500` 服务内部错误；`503` 依赖或执行服务暂不可用。
 
     `401` invalid signature, timestamp, or nonce; `403` resource not owned by the current channel user; `413` request body too large; `422` validation failed; `429` rate limited; `500` internal error; `503` dependency or execution service unavailable.
+
+    短期令牌 / Short-lived tokens: 十分钟内有效的一次性渠道令牌，绑定签发时的渠道和用户身份。截止 expiresAt 前仅能认证一个新请求；认证成功即消费，业务失败不退还。每次新请求、重试或 SSE/WebSocket 重连都必须重新签发，不得缓存复用。使用 X-OpenAPI-Token，与所有 HMAC 鉴权头互斥，不能用于 presign。 / A single-use channel token valid for ten minutes, bound to the issuing channel and user. It authenticates only one new request before expiresAt and is consumed on successful authentication even if the business operation fails. Obtain a fresh token for every new request, retry, or SSE/WebSocket reconnection; never cache or reuse it. Send X-OpenAPI-Token without any HMAC authentication headers; tokens cannot call presign. POST /chat/presign uses an empty AK/SK-signed request. Keep OPENAPI_SK on a trusted server.
+
+    WebSocket: GET /chat/conversations/{conversationId}/stream/ws?messageId=... upgrades the connection; the full prefix is /api/agents/channel/openapi/v1/{channelId}. Authenticate with HMAC, X-OpenAPI-Token, or the xlt-openapi-token.<token> WebSocket subprotocol. A fresh token is required for every new connection; expiry limits connection authentication, not the lifetime of an established stream. Internal chat-client-request and chat-client-response events are excluded from the public protocol.
   license:
     name: MIT
     identifier: MIT
@@ -87,9 +91,9 @@ tags:
       Use this group to create or continue conversations, consume live SSE events, probe streaming connectivity, interrupt execution, and compact context. A typical flow reads configuration, uploads files if needed, submits a message, and then subscribes to SSE. Interrupt or compact only when execution or context state requires it. Do not treat an SSE disconnect as proof that server-side execution ended.
   - name: Conversations
     description: |-
-      用于管理会话生命周期和聚合状态，包括列表、活动/未读状态、已读游标、统计、标题、业务状态、分享和删除。列表适合工作台展示，活动查询适合轮询补偿，分享接口只应在明确需要对外共享时使用。删除和撤销分享会改变持久状态。
+      用于管理会话生命周期和聚合状态，包括列表、活动/未读状态、已读游标、统计、标题、业务状态、分组和删除。列表适合工作台展示，活动查询适合轮询补偿。分组和删除会改变持久状态。
 
-      Use this group to manage conversation lifecycle and aggregate state, including lists, active or unread state, read cursors, statistics, titles, business status, sharing, and deletion. Lists support workspace views, activity queries support polling recovery, and sharing should be used only for deliberate external access. Deletion and share revocation mutate persistent state.
+      Use this group to manage conversation lifecycle and aggregate state, including lists, active or unread state, read cursors, statistics, titles, business status, grouping, and deletion. Lists support workspace views, activity queries support polling recovery. Grouping and deletion mutate persistent state.
   - name: Messages
     description: |-
       用于读取会话消息、异步任务和排队状态，以及取消尚未执行的排队消息。消息详情适合审计与结果恢复，异步任务接口用于跟踪长任务。取消接口只对仍在队列中的消息有效，不能代替执行中的中断接口。
@@ -131,6 +135,7 @@ security:
     OpenApiNonce: []
     OpenApiUser: []
     OpenApiSignature: []
+  - OpenApiToken: []
 paths:
   /api/agents/channel/openapi/v1/{channelId}/chat/config:
     get:
@@ -177,6 +182,9 @@ paths:
                   - ext: example
                     media: example
                 maxAttachmentCount: 10
+                goal:
+                  supported: true
+                  continuationEnabled: true
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -292,6 +300,7 @@ paths:
                   topK: 1
                   frequencyPenalty: -2
                   presencePenalty: -2
+                planMode: false
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -429,6 +438,8 @@ paths:
               files:
                 - id: 1
                   fileName: quarterly-report.pdf
+              planMode: false
+              goalMode: false
         description: 创建会话并提交消息 / Create a conversation and submit a message 的 JSON 请求参数。 / JSON request parameters for createChat.
       description: |-
         ### 使用场景
@@ -495,7 +506,9 @@ paths:
                   "id": 1,
                   "fileName": "quarterly-report.pdf"
                 }
-              ]
+              ],
+              "planMode": false,
+              "goalMode": false
             }
         - lang: Shell
           label: cURL + local HMAC
@@ -528,7 +541,9 @@ paths:
                   "id": 1,
                   "fileName": "quarterly-report.pdf"
                 }
-              ]
+              ],
+              "planMode": false,
+              "goalMode": false
             }
             JSON
             )
@@ -616,6 +631,8 @@ paths:
               files:
                 - id: 1
                   fileName: quarterly-report.pdf
+              planMode: false
+              goalMode: false
         description: 向已有会话提交消息 / Submit a message to an existing conversation 的 JSON 请求参数。 / JSON request parameters for continueChat.
       description: |-
         ### 使用场景
@@ -682,7 +699,9 @@ paths:
                   "id": 1,
                   "fileName": "quarterly-report.pdf"
                 }
-              ]
+              ],
+              "planMode": false,
+              "goalMode": false
             }
         - lang: Shell
           label: cURL + local HMAC
@@ -715,7 +734,9 @@ paths:
                   "id": 1,
                   "fileName": "quarterly-report.pdf"
                 }
-              ]
+              ],
+              "planMode": false,
+              "goalMode": false
             }
             JSON
             )
@@ -821,6 +842,133 @@ paths:
             eval "$(node scripts/sign-request.mjs --method DELETE --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request DELETE "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+    get:
+      operationId: getConversationSummary
+      tags:
+        - Conversations
+      summary: 读取会话摘要 / Get conversation summary
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+      responses:
+        "200":
+          description: 读取会话摘要 / Get conversation summary 的成功响应。 / Successful response for getConversationSummary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationSummary"
+              example:
+                conversationId: conversation-demo-001
+                conversationType: example
+                title: Quarterly report summary
+                titleState: example
+                status: COMPLETED
+                messageCount: 0
+                totalTokens: 0
+                totalInputTokens: 0
+                totalOutputTokens: 0
+                usage:
+                  inputTokens: 0
+                  outputTokens: 0
+                  totalTokens: 0
+                  inputTokenBreakdown:
+                    observedInputTokens: 0
+                    uncachedInputTokens: 0
+                    cachedInputTokens: 0
+                    cacheCreationInputTokens: 0
+                  reasoningTokens: 0
+                  cacheHitRate: 1
+                  inputBreakdownCoverageRate: 1
+                createdTime: 2026-01-15T08:00:00Z
+                lastUpdateTime: 2026-01-15T08:00:00Z
+                groupId: 1
+                groupName: example
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        按会话标识恢复当前用户的会话摘要。
+
+        ### Use case
+        Restore the current user's conversation summary by ID.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        按会话标识恢复当前用户的会话摘要。
+
+        ### Behavior and side effects
+        Restore the current user's conversation summary by ID.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        读取会话摘要 / Get conversation summary
+
+        ### Operation summary
+        读取会话摘要 / Get conversation summary
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001 HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
               -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
               -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
               -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
@@ -1436,79 +1584,67 @@ paths:
           x-lingya-sdk-bound-from: channelId
           description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
           example: 11111111-2222-4333-8444-555555555555
-        - &a1
-          name: current
+        - name: current
           in: query
           required: false
           schema:
             type: integer
             format: int32
             minimum: 0
+            default: 0
           description: 从 0 开始的页码。 / Zero-based page index.
           example: 0
-        - &a2
-          name: size
+        - name: size
           in: query
           required: false
           schema:
             type: integer
             format: int32
-            minimum: 0
-            maximum: 1000
+            minimum: 1
+            maximum: 100
             default: 30
           description: 单页记录数。 / Number of records per page.
           example: 30
-        - &a3
-          name: orderBy
-          in: query
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
-          description: 排序字段列表。 / Ordered list of sort fields.
-          example:
-            - lastUpdateTime
-        - &a4
-          name: orderDirection
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - ASC
-              - DESC
-            default: ASC
-          description: 排序方向。 / Sort direction.
-          example: DESC
-        - &a5
-          name: orderNullHandling
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - NATIVE
-              - NULLS_FIRST
-              - NULLS_LAST
-            default: NATIVE
-          description: 空值排序策略。 / Null ordering strategy.
-          example: NATIVE
-        - &a6
-          name: keyword
-          in: query
-          required: false
-          schema:
-            type: string
-          description: 标题或正文检索关键字。 / Title or content search keyword.
-          example: quarterly
         - name: status
           in: query
           required: false
           schema:
             type: string
+            enum:
+              - ACTIVE
+              - ARCHIVED
+              - ALL
+            default: ACTIVE
           description: 状态过滤条件。 / Status filter.
-          example: COMPLETED
+          example: ACTIVE
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+          description: 标题或正文检索关键字。 / Title or content search keyword.
+          example: quarterly
+        - name: groupFilter
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ALL
+              - UNGROUPED
+              - GROUP
+            default: ALL
+          description: 字段 groupFilter / group filter field。
+          example: ALL
+        - name: groupId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: groupFilter 为 GROUP 时必填。 / Required when groupFilter is GROUP.
+          example: 1
       responses:
         "200":
           description: 分页查询会话 / List conversations 的成功响应。 / Successful response for listConversations.
@@ -1541,6 +1677,12 @@ paths:
                       inputBreakdownCoverageRate: 1
                     createdTime: 2026-01-15T08:00:00Z
                     lastUpdateTime: 2026-01-15T08:00:00Z
+                    groupId: 1
+                    groupName: example
+                page:
+                  current: 0
+                  size: 0
+                  total: 0
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -1589,7 +1731,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations?current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations?current=0&size=30&status=ACTIVE&keyword=quarterly&groupFilter=ALL&groupId=1 HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -1603,7 +1745,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations"
-            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED"
+            RAW_QUERY="current=0&size=30&status=ACTIVE&keyword=quarterly&groupFilter=ALL&groupId=1"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -2302,8 +2444,20 @@ paths:
           description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
           example: conversation-demo-001
       responses:
-        "202":
+        "200":
           description: 更新会话标题 / Update conversation title 的成功响应。 / Successful response for updateConversationTitle.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationMetadata"
+              example:
+                conversationId: conversation-demo-001
+                status: ACTIVE
+                title: Quarterly report summary
+                titleState: example
+                groupId: 1
+                groupName: example
+                lastUpdateTime: 2026-01-15T08:00:00Z
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -2341,10 +2495,10 @@ paths:
         Channel credentials and the external user are configured, and the target resource belongs to that user.
 
         ### 行为与副作用
-        异步更新标题。
+        同步更新标题并返回权威会话元数据。
 
         ### Behavior and side effects
-        Updates the title asynchronously.
+        Update the title and return authoritative conversation metadata.
 
         ### 后续调用
         重新读取标题或刷新列表。
@@ -2567,7 +2721,7 @@ paths:
             maximum: 1000
             default: 100
           description: 单页记录数。 / Number of records per page.
-          example: 30
+          example: 100
       responses:
         "200":
           description: 分页读取 SQL 结果 / Get paged SQL results 的成功响应。 / Successful response for getSqlQueryResult.
@@ -2636,7 +2790,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/sql-query-results/sql-result-demo-001?current=0&size=30 HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/sql-query-results/sql-result-demo-001?current=0&size=100 HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -2650,7 +2804,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/sql-query-results/sql-result-demo-001"
-            RAW_QUERY="current=0&size=30"
+            RAW_QUERY="current=0&size=100"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -2946,12 +3100,66 @@ paths:
             minLength: 1
           description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
           example: conversation-demo-001
-        - *a1
-        - *a2
-        - *a3
-        - *a4
-        - *a5
-        - *a6
+        - name: current
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          description: 从 0 开始的页码。 / Zero-based page index.
+          example: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+            default: 30
+          description: 单页记录数。 / Number of records per page.
+          example: 30
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: 排序字段列表。 / Ordered list of sort fields.
+          example:
+            - lastUpdateTime
+        - name: orderDirection
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: ASC
+          description: 排序方向。 / Sort direction.
+          example: ASC
+        - name: orderNullHandling
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - NATIVE
+              - NULLS_FIRST
+              - NULLS_LAST
+            default: NATIVE
+          description: 空值排序策略。 / Null ordering strategy.
+          example: NATIVE
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 标题或正文检索关键字。 / Title or content search keyword.
+          example: quarterly
       responses:
         "200":
           description: 分页查询会话消息 / List conversation messages 的成功响应。 / Successful response for listConversationMessages.
@@ -2974,9 +3182,9 @@ paths:
                           fileSize: 0
                           fileName: quarterly-report.pdf
                           mimeType: application/pdf
-                      metadataRawJson: example
                       executionType: example
                       type: USER
+                      metadata: {}
                     inputTokens: 0
                     outputTokens: 0
                     totalTokens: 0
@@ -3052,7 +3260,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/messages?current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/messages?current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -3066,7 +3274,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/messages"
-            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly"
+            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -3128,9 +3336,9 @@ paths:
                       fileSize: 0
                       fileName: quarterly-report.pdf
                       mimeType: application/pdf
-                  metadataRawJson: example
                   executionType: example
                   type: USER
+                  metadata: {}
                 inputTokens: 0
                 outputTokens: 0
                 totalTokens: 0
@@ -3249,12 +3457,66 @@ paths:
             minLength: 1
           description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
           example: conversation-demo-001
-        - *a1
-        - *a2
-        - *a3
-        - *a4
-        - *a5
-        - *a6
+        - name: current
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          description: 从 0 开始的页码。 / Zero-based page index.
+          example: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+            default: 30
+          description: 单页记录数。 / Number of records per page.
+          example: 30
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: 排序字段列表。 / Ordered list of sort fields.
+          example:
+            - lastUpdateTime
+        - name: orderDirection
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: ASC
+          description: 排序方向。 / Sort direction.
+          example: ASC
+        - name: orderNullHandling
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - NATIVE
+              - NULLS_FIRST
+              - NULLS_LAST
+            default: NATIVE
+          description: 空值排序策略。 / Null ordering strategy.
+          example: NATIVE
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 标题或正文检索关键字。 / Title or content search keyword.
+          example: quarterly
         - name: status
           in: query
           required: false
@@ -3351,7 +3613,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/async-tasks?current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/async-tasks?current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -3365,7 +3627,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/async-tasks"
-            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED"
+            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -3415,7 +3677,7 @@ paths:
             maximum: 50
             default: 50
           description: 单页记录数。 / Number of records per page.
-          example: 30
+          example: 50
       responses:
         "200":
           description: 增量同步异步任务 / Sync asynchronous task updates 的成功响应。 / Successful response for syncConversationAsyncTasks.
@@ -3464,9 +3726,9 @@ paths:
                           fileSize: 0
                           fileName: quarterly-report.pdf
                           mimeType: application/pdf
-                      metadataRawJson: example
                       executionType: example
                       type: USER
+                      metadata: {}
                     inputTokens: 0
                     outputTokens: 0
                     totalTokens: 0
@@ -3541,7 +3803,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/async-tasks/sync?afterMessageId=example&size=30 HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/async-tasks/sync?afterMessageId=example&size=50 HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -3555,7 +3817,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/async-tasks/sync"
-            RAW_QUERY="afterMessageId=example&size=30"
+            RAW_QUERY="afterMessageId=example&size=50"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -3724,12 +3986,66 @@ paths:
             minLength: 1
           description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
           example: conversation-demo-001
-        - *a1
-        - *a2
-        - *a3
-        - *a4
-        - *a5
-        - *a6
+        - name: current
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          description: 从 0 开始的页码。 / Zero-based page index.
+          example: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+            default: 30
+          description: 单页记录数。 / Number of records per page.
+          example: 30
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: 排序字段列表。 / Ordered list of sort fields.
+          example:
+            - lastUpdateTime
+        - name: orderDirection
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: ASC
+          description: 排序方向。 / Sort direction.
+          example: ASC
+        - name: orderNullHandling
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - NATIVE
+              - NULLS_FIRST
+              - NULLS_LAST
+            default: NATIVE
+          description: 空值排序策略。 / Null ordering strategy.
+          example: NATIVE
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 标题或正文检索关键字。 / Title or content search keyword.
+          example: quarterly
         - name: status
           in: query
           required: false
@@ -3821,7 +4137,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents?current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents?current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -3835,7 +4151,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents"
-            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED"
+            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly&status=COMPLETED"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -3885,7 +4201,7 @@ paths:
             maximum: 100
             default: 50
           description: 单页记录数。 / Number of records per page.
-          example: 30
+          example: 50
       responses:
         "200":
           description: 增量同步子 Agent 状态 / Sync subagent task updates 的成功响应。 / Successful response for syncConversationSubagents.
@@ -3987,7 +4303,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/sync?cursor=example&size=30 HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/subagents/sync?cursor=example&size=50 HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -4001,7 +4317,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/subagents/sync"
-            RAW_QUERY="cursor=example&size=30"
+            RAW_QUERY="cursor=example&size=50"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -4476,9 +4792,9 @@ paths:
                       fileSize: 0
                       fileName: quarterly-report.pdf
                       mimeType: application/pdf
-                  metadataRawJson: example
                   executionType: example
                   type: USER
+                  metadata: {}
                 inputTokens: 0
                 outputTokens: 0
                 totalTokens: 0
@@ -4830,362 +5146,6 @@ paths:
               -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
               -H "Content-Type: application/json" \
               --data-binary "$BODY"
-  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares:
-    get:
-      operationId: listConversationShares
-      tags:
-        - Conversations
-      summary: 查询会话分享 / List conversation shares
-      parameters:
-        - name: channelId
-          in: path
-          required: true
-          schema:
-            type: string
-            minLength: 1
-          x-lingya-sdk-bound-from: channelId
-          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
-          example: 11111111-2222-4333-8444-555555555555
-        - name: conversationId
-          in: path
-          required: true
-          schema:
-            type: string
-            minLength: 1
-          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
-          example: conversation-demo-001
-      responses:
-        "200":
-          description: 查询会话分享 / List conversation shares 的成功响应。 / Successful response for listConversationShares.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConversationShareList"
-              example:
-                records:
-                  - shareId: 1001
-                    shareCode: share-demo-code
-                    serverName: lingtong.lingya.tech
-                    accessMode: READ_ONLY
-                    status: COMPLETED
-                    expiresAt: 2026-01-15T08:00:00Z
-                    createdTime: 2026-01-15T08:00:00Z
-                    lastUpdateTime: 2026-01-15T08:00:00Z
-        "401":
-          $ref: "#/components/responses/Error"
-        "403":
-          $ref: "#/components/responses/Error"
-        "413":
-          $ref: "#/components/responses/Error"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "429":
-          $ref: "#/components/responses/Error"
-        "500":
-          $ref: "#/components/responses/Error"
-        "503":
-          $ref: "#/components/responses/Error"
-      description: |-
-        ### 使用场景
-        查看会话当前创建的分享记录。
-
-        ### Use case
-        Inspect the conversation's current share records.
-
-        ### 前置条件
-        渠道凭证和外部用户已配置，目标资源属于当前用户。
-
-        ### Prerequisites
-        Channel credentials and the external user are configured, and the target resource belongs to that user.
-
-        ### 行为与副作用
-        只读。
-
-        ### Behavior and side effects
-        Read-only.
-
-        ### 后续调用
-        按需创建新分享或撤销旧分享。
-
-        ### Next step
-        Create a new share or revoke an existing one as needed.
-
-        ### 接口摘要
-        查询会话分享 / List conversation shares
-
-        ### Operation summary
-        查询会话分享 / List conversation shares
-      x-codeSamples:
-        - lang: HTTP
-          label: Raw HTTP
-          source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/shares HTTP/1.1
-            Host: lingtong.lingya.tech
-            X-OpenAPI-AK: <access-key>
-            X-OpenAPI-Timestamp: <unix-seconds>
-            X-OpenAPI-Nonce: <base64url-nonce>
-            X-OpenAPI-User: <base64url-external-user>
-            X-OpenAPI-Signature: <lowercase-hex-signature>
-        - lang: Shell
-          label: cURL + local HMAC
-          source: |-
-            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
-            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
-            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
-            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/shares"
-            RAW_QUERY=""
-            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
-
-            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
-              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
-              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
-              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
-              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
-              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
-    post:
-      operationId: createConversationShare
-      tags:
-        - Conversations
-      summary: 创建会话分享 / Create a conversation share
-      parameters:
-        - name: channelId
-          in: path
-          required: true
-          schema:
-            type: string
-            minLength: 1
-          x-lingya-sdk-bound-from: channelId
-          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
-          example: 11111111-2222-4333-8444-555555555555
-        - name: conversationId
-          in: path
-          required: true
-          schema:
-            type: string
-            minLength: 1
-          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
-          example: conversation-demo-001
-      responses:
-        "201":
-          description: 创建会话分享 / Create a conversation share 的成功响应。 / Successful response for createConversationShare.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConversationShareCreated"
-              example:
-                shareId: 1001
-                shareCode: share-demo-code
-                serverName: lingtong.lingya.tech
-                passwordRequired: true
-                expiresAt: 2026-01-15T08:00:00Z
-        "401":
-          $ref: "#/components/responses/Error"
-        "403":
-          $ref: "#/components/responses/Error"
-        "413":
-          $ref: "#/components/responses/Error"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "429":
-          $ref: "#/components/responses/Error"
-        "500":
-          $ref: "#/components/responses/Error"
-        "503":
-          $ref: "#/components/responses/Error"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ConversationShareInput"
-            example:
-              password: "123456"
-              expiresAt: 2026-01-15T08:00:00Z
-        description: 创建会话分享 / Create a conversation share 的 JSON 请求参数。 / JSON request parameters for createConversationShare.
-      description: |-
-        ### 使用场景
-        为会话创建受控的外部分享。
-
-        ### Use case
-        Create controlled external sharing for a conversation.
-
-        ### 前置条件
-        渠道凭证和外部用户已配置，目标资源属于当前用户。
-
-        ### Prerequisites
-        Channel credentials and the external user are configured, and the target resource belongs to that user.
-
-        ### 行为与副作用
-        创建新的分享记录和分享码。
-
-        ### Behavior and side effects
-        Creates a share record and share code.
-
-        ### 后续调用
-        安全地交付分享信息，并定期检查有效期。
-
-        ### Next step
-        Deliver share information securely and monitor its expiry.
-
-        ### 接口摘要
-        创建会话分享 / Create a conversation share
-
-        ### Operation summary
-        创建会话分享 / Create a conversation share
-      x-codeSamples:
-        - lang: HTTP
-          label: Raw HTTP
-          source: |-
-            POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/shares HTTP/1.1
-            Host: lingtong.lingya.tech
-            X-OpenAPI-AK: <access-key>
-            X-OpenAPI-Timestamp: <unix-seconds>
-            X-OpenAPI-Nonce: <base64url-nonce>
-            X-OpenAPI-User: <base64url-external-user>
-            X-OpenAPI-Signature: <lowercase-hex-signature>
-            Content-Type: application/json
-
-            {
-              "password": "123456",
-              "expiresAt": "2026-01-15T08:00:00Z"
-            }
-        - lang: Shell
-          label: cURL + local HMAC
-          source: |-
-            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
-            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
-            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
-            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/shares"
-            RAW_QUERY=""
-            BODY=$(cat <<'JSON'
-            {
-              "password": "123456",
-              "expiresAt": "2026-01-15T08:00:00Z"
-            }
-            JSON
-            )
-            eval "$(node scripts/sign-request.mjs --method POST --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
-
-            curl --request POST "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
-              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
-              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
-              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
-              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
-              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
-              -H "Content-Type: application/json" \
-              --data-binary "$BODY"
-  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares/{shareId}:
-    delete:
-      operationId: revokeConversationShare
-      tags:
-        - Conversations
-      summary: 撤销会话分享 / Revoke a conversation share
-      parameters:
-        - name: channelId
-          in: path
-          required: true
-          schema:
-            type: string
-            minLength: 1
-          x-lingya-sdk-bound-from: channelId
-          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
-          example: 11111111-2222-4333-8444-555555555555
-        - name: conversationId
-          in: path
-          required: true
-          schema:
-            type: string
-            minLength: 1
-          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
-          example: conversation-demo-001
-        - name: shareId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-          description: 会话分享记录 ID。 / Conversation-share record ID.
-          example: 1001
-      responses:
-        "200":
-          description: 撤销会话分享 / Revoke a conversation share 的成功响应。 / Successful response for revokeConversationShare.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConversationShareRevoked"
-              example:
-                shareId: 1001
-        "401":
-          $ref: "#/components/responses/Error"
-        "403":
-          $ref: "#/components/responses/Error"
-        "413":
-          $ref: "#/components/responses/Error"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "429":
-          $ref: "#/components/responses/Error"
-        "500":
-          $ref: "#/components/responses/Error"
-        "503":
-          $ref: "#/components/responses/Error"
-      description: |-
-        ### 使用场景
-        使不再需要的分享立即失效。
-
-        ### Use case
-        Invalidate a share that is no longer needed.
-
-        ### 前置条件
-        渠道凭证和外部用户已配置，目标资源属于当前用户。
-
-        ### Prerequisites
-        Channel credentials and the external user are configured, and the target resource belongs to that user.
-
-        ### 行为与副作用
-        撤销指定分享，不删除原会话。
-
-        ### Behavior and side effects
-        Revokes the selected share without deleting the conversation.
-
-        ### 后续调用
-        刷新分享列表并停止分发旧链接。
-
-        ### Next step
-        Refresh the share list and stop distributing the old link.
-
-        ### 接口摘要
-        撤销会话分享 / Revoke a conversation share
-
-        ### Operation summary
-        撤销会话分享 / Revoke a conversation share
-      x-codeSamples:
-        - lang: HTTP
-          label: Raw HTTP
-          source: |-
-            DELETE /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/shares/1001 HTTP/1.1
-            Host: lingtong.lingya.tech
-            X-OpenAPI-AK: <access-key>
-            X-OpenAPI-Timestamp: <unix-seconds>
-            X-OpenAPI-Nonce: <base64url-nonce>
-            X-OpenAPI-User: <base64url-external-user>
-            X-OpenAPI-Signature: <lowercase-hex-signature>
-        - lang: Shell
-          label: cURL + local HMAC
-          source: |-
-            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
-            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
-            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
-            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/shares/1001"
-            RAW_QUERY=""
-            eval "$(node scripts/sign-request.mjs --method DELETE --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
-
-            curl --request DELETE "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
-              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
-              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
-              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
-              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
-              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
   /api/agents/channel/openapi/v1/{channelId}/chat/plan/approve:
     post:
       operationId: approvePlan
@@ -6662,12 +6622,66 @@ paths:
             minLength: 1
           description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
           example: conversation-demo-001
-        - *a1
-        - *a2
-        - *a3
-        - *a4
-        - *a5
-        - *a6
+        - name: current
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          description: 从 0 开始的页码。 / Zero-based page index.
+          example: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+            default: 30
+          description: 单页记录数。 / Number of records per page.
+          example: 30
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: 排序字段列表。 / Ordered list of sort fields.
+          example:
+            - lastUpdateTime
+        - name: orderDirection
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: ASC
+          description: 排序方向。 / Sort direction.
+          example: ASC
+        - name: orderNullHandling
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - NATIVE
+              - NULLS_FIRST
+              - NULLS_LAST
+            default: NATIVE
+          description: 空值排序策略。 / Null ordering strategy.
+          example: NATIVE
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 标题或正文检索关键字。 / Title or content search keyword.
+          example: quarterly
         - name: prefix
           in: query
           required: false
@@ -6749,7 +6763,7 @@ paths:
         - lang: HTTP
           label: Raw HTTP
           source: |-
-            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/workspace/files?current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&prefix=reports%2F HTTP/1.1
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/workspace/files?current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly&prefix=reports%2F HTTP/1.1
             Host: lingtong.lingya.tech
             X-OpenAPI-AK: <access-key>
             X-OpenAPI-Timestamp: <unix-seconds>
@@ -6763,7 +6777,7 @@ paths:
             CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
             EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
             RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/workspace/files"
-            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=DESC&orderNullHandling=NATIVE&keyword=quarterly&prefix=reports%2F"
+            RAW_QUERY="current=0&size=30&orderBy=lastUpdateTime&orderDirection=ASC&orderNullHandling=NATIVE&keyword=quarterly&prefix=reports%2F"
             eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
 
             curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
@@ -6883,6 +6897,1808 @@ paths:
               -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
               -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
               -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/presign:
+    post:
+      operationId: createOpenApiToken
+      tags:
+        - Configuration
+      summary: 签发一次性短期渠道令牌 / Create a single-use short-lived channel token
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+      responses:
+        "201":
+          description: 签发一次性短期渠道令牌 / Create a single-use short-lived channel token 的成功响应。 / Successful response for createOpenApiToken.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenApiToken"
+              example:
+                token: example
+                expiresAt: 2026-01-15T08:00:00Z
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      security:
+        - OpenApiAccessKey: []
+          OpenApiTimestamp: []
+          OpenApiNonce: []
+          OpenApiUser: []
+          OpenApiSignature: []
+      description: |-
+        ### 使用场景
+        仅接受 AK/SK 签名且请求体必须为空；返回 token 和 expiresAt。十分钟内有效的一次性渠道令牌，绑定签发时的渠道和用户身份。截止 expiresAt 前仅能认证一个新请求；认证成功即消费，业务失败不退还。每次新请求、重试或 SSE/WebSocket 重连都必须重新签发，不得缓存复用。使用 X-OpenAPI-Token，与所有 HMAC 鉴权头互斥，不能用于 presign。
+
+        ### Use case
+        Requires AK/SK signing with an empty request body; returns token and expiresAt. A single-use channel token valid for ten minutes, bound to the issuing channel and user. It authenticates only one new request before expiresAt and is consumed on successful authentication even if the business operation fails. Obtain a fresh token for every new request, retry, or SSE/WebSocket reconnection; never cache or reuse it. Send X-OpenAPI-Token without any HMAC authentication headers; tokens cannot call presign.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        仅接受 AK/SK 签名且请求体必须为空；返回 token 和 expiresAt。十分钟内有效的一次性渠道令牌，绑定签发时的渠道和用户身份。截止 expiresAt 前仅能认证一个新请求；认证成功即消费，业务失败不退还。每次新请求、重试或 SSE/WebSocket 重连都必须重新签发，不得缓存复用。使用 X-OpenAPI-Token，与所有 HMAC 鉴权头互斥，不能用于 presign。
+
+        ### Behavior and side effects
+        Requires AK/SK signing with an empty request body; returns token and expiresAt. A single-use channel token valid for ten minutes, bound to the issuing channel and user. It authenticates only one new request before expiresAt and is consumed on successful authentication even if the business operation fails. Obtain a fresh token for every new request, retry, or SSE/WebSocket reconnection; never cache or reuse it. Send X-OpenAPI-Token without any HMAC authentication headers; tokens cannot call presign.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        签发一次性短期渠道令牌 / Create a single-use short-lived channel token
+
+        ### Operation summary
+        签发一次性短期渠道令牌 / Create a single-use short-lived channel token
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/presign HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/presign"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method POST --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request POST "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversation-groups:
+    get:
+      operationId: listConversationGroups
+      tags:
+        - Conversations
+      summary: 查询会话分组 / List conversation groups
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+      responses:
+        "200":
+          description: 查询会话分组 / List conversation groups 的成功响应。 / Successful response for listConversationGroups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationGroupList"
+              example:
+                records:
+                  - id: 1
+                    name: example
+                    createdTime: 2026-01-15T08:00:00Z
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        一次读取当前用户作用域下的完整分组目录。
+
+        ### Use case
+        Read the complete group directory for the current user.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        一次读取当前用户作用域下的完整分组目录。
+
+        ### Behavior and side effects
+        Read the complete group directory for the current user.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        查询会话分组 / List conversation groups
+
+        ### Operation summary
+        查询会话分组 / List conversation groups
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversation-groups HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversation-groups"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+    post:
+      operationId: createConversationGroup
+      tags:
+        - Conversations
+      summary: 创建会话分组 / Create conversation group
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+      responses:
+        "201":
+          description: 创建会话分组 / Create conversation group 的成功响应。 / Successful response for createConversationGroup.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationGroup"
+              example:
+                id: 1
+                name: example
+                createdTime: 2026-01-15T08:00:00Z
+                lastUpdateTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationGroupNameInput"
+            example:
+              name: example
+        description: 创建会话分组 / Create conversation group 的 JSON 请求参数。 / JSON request parameters for createConversationGroup.
+      description: |-
+        ### 使用场景
+        去除名称首尾空白后创建分组，名称最多 60 字符。
+
+        ### Use case
+        Create a group after trimming the name; names are limited to 60 characters.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        去除名称首尾空白后创建分组，名称最多 60 字符。
+
+        ### Behavior and side effects
+        Create a group after trimming the name; names are limited to 60 characters.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        创建会话分组 / Create conversation group
+
+        ### Operation summary
+        创建会话分组 / Create conversation group
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversation-groups HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+            Content-Type: application/json
+
+            {
+              "name": "example"
+            }
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversation-groups"
+            RAW_QUERY=""
+            BODY=$(cat <<'JSON'
+            {
+              "name": "example"
+            }
+            JSON
+            )
+            eval "$(node scripts/sign-request.mjs --method POST --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
+
+            curl --request POST "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
+              -H "Content-Type: application/json" \
+              --data-binary "$BODY"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversation-groups/{groupId}:
+    patch:
+      operationId: renameConversationGroup
+      tags:
+        - Conversations
+      summary: 重命名会话分组 / Rename conversation group
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 字段 groupId / group id field。
+          example: 1
+      responses:
+        "200":
+          description: 重命名会话分组 / Rename conversation group 的成功响应。 / Successful response for renameConversationGroup.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationGroup"
+              example:
+                id: 1
+                name: example
+                createdTime: 2026-01-15T08:00:00Z
+                lastUpdateTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationGroupNameInput"
+            example:
+              name: example
+        description: 重命名会话分组 / Rename conversation group 的 JSON 请求参数。 / JSON request parameters for renameConversationGroup.
+      description: |-
+        ### 使用场景
+        更新当前用户的分组名称。
+
+        ### Use case
+        Update the name of a group owned by the current user.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        更新当前用户的分组名称。
+
+        ### Behavior and side effects
+        Update the name of a group owned by the current user.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        重命名会话分组 / Rename conversation group
+
+        ### Operation summary
+        重命名会话分组 / Rename conversation group
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            PATCH /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversation-groups/groupId HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+            Content-Type: application/json
+
+            {
+              "name": "example"
+            }
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversation-groups/groupId"
+            RAW_QUERY=""
+            BODY=$(cat <<'JSON'
+            {
+              "name": "example"
+            }
+            JSON
+            )
+            eval "$(node scripts/sign-request.mjs --method PATCH --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
+
+            curl --request PATCH "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
+              -H "Content-Type: application/json" \
+              --data-binary "$BODY"
+    delete:
+      operationId: deleteConversationGroup
+      tags:
+        - Conversations
+      summary: 删除会话分组 / Delete conversation group
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 字段 groupId / group id field。
+          example: 1
+      responses:
+        "200":
+          description: 删除会话分组 / Delete conversation group 的成功响应。 / Successful response for deleteConversationGroup.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationGroupDeleted"
+              example:
+                groupId: 1
+                movedConversationCount: 1
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        删除分组并将会话移回未分组，返回移动数量。
+
+        ### Use case
+        Delete the group and move its conversations to ungrouped; return the moved count.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        删除分组并将会话移回未分组，返回移动数量。
+
+        ### Behavior and side effects
+        Delete the group and move its conversations to ungrouped; return the moved count.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        删除会话分组 / Delete conversation group
+
+        ### Operation summary
+        删除会话分组 / Delete conversation group
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            DELETE /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversation-groups/groupId HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversation-groups/groupId"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method DELETE --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request DELETE "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/group:
+    patch:
+      operationId: moveConversationToGroup
+      tags:
+        - Conversations
+      summary: 移动会话分组 / Move conversation to group
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+      responses:
+        "200":
+          description: 移动会话分组 / Move conversation to group 的成功响应。 / Successful response for moveConversationToGroup.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationMetadata"
+              example:
+                conversationId: conversation-demo-001
+                status: ACTIVE
+                title: Quarterly report summary
+                titleState: example
+                groupId: 1
+                groupName: example
+                lastUpdateTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateConversationGroupInput"
+            example:
+              groupId: 1
+        description: 移动会话分组 / Move conversation to group 的 JSON 请求参数。 / JSON request parameters for moveConversationToGroup.
+      description: |-
+        ### 使用场景
+        必须显式提供 groupId；null 表示移回未分组。
+
+        ### Use case
+        Supply groupId explicitly; null moves the conversation to ungrouped.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        必须显式提供 groupId；null 表示移回未分组。
+
+        ### Behavior and side effects
+        Supply groupId explicitly; null moves the conversation to ungrouped.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        移动会话分组 / Move conversation to group
+
+        ### Operation summary
+        移动会话分组 / Move conversation to group
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            PATCH /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/group HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+            Content-Type: application/json
+
+            {
+              "groupId": 1
+            }
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/group"
+            RAW_QUERY=""
+            BODY=$(cat <<'JSON'
+            {
+              "groupId": 1
+            }
+            JSON
+            )
+            eval "$(node scripts/sign-request.mjs --method PATCH --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
+
+            curl --request PATCH "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
+              -H "Content-Type: application/json" \
+              --data-binary "$BODY"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/sync:
+    get:
+      operationId: syncConversationMessages
+      tags:
+        - Messages
+      summary: 增量同步消息 / Sync conversation messages
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: afterMessageId
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+          description: 通知消息同步游标。 / Notification-message sync cursor.
+          example: example
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 50
+            default: 50
+          description: 单页记录数。 / Number of records per page.
+          example: 50
+      responses:
+        "200":
+          description: 增量同步消息 / Sync conversation messages 的成功响应。 / Successful response for syncConversationMessages.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationMessageSync"
+              example:
+                messages:
+                  - messageId: message-demo-001
+                    userMessage:
+                      text: example
+                      multimodalAttachments:
+                        - fileName: quarterly-report.pdf
+                          mimeType: application/pdf
+                          data: example
+                      attachments:
+                        - fileId: 1001
+                          path: reports/quarterly-report.pdf
+                          fileSize: 0
+                          fileName: quarterly-report.pdf
+                          mimeType: application/pdf
+                      executionType: example
+                      type: USER
+                      metadata: {}
+                    inputTokens: 0
+                    outputTokens: 0
+                    totalTokens: 0
+                    usage:
+                      inputTokens: 0
+                      outputTokens: 0
+                      totalTokens: 0
+                      inputTokenBreakdown:
+                        observedInputTokens: 0
+                        uncachedInputTokens: 0
+                        cachedInputTokens: 0
+                        cacheCreationInputTokens: 0
+                      reasoningTokens: 0
+                      cacheHitRate: 1
+                      inputBreakdownCoverageRate: 1
+                    executionTimeMillis: 0
+                    processingSteps: 0
+                    totalToolCalls: 0
+                    status: COMPLETED
+                    createdTime: 2026-01-15T08:00:00Z
+                    lastUpdateTime: 2026-01-15T08:00:00Z
+                    executionType: example
+                    parentMessageId: example
+                nextMessageId: example
+                hasMore: true
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        按公开消息游标读取新增消息；无新增时保留原游标。
+
+        ### Use case
+        Read new public messages after a cursor; retain the cursor if no new messages exist.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        按公开消息游标读取新增消息；无新增时保留原游标。
+
+        ### Behavior and side effects
+        Read new public messages after a cursor; retain the cursor if no new messages exist.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        增量同步消息 / Sync conversation messages
+
+        ### Operation summary
+        增量同步消息 / Sync conversation messages
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/messages/sync?afterMessageId=example&size=50 HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/messages/sync"
+            RAW_QUERY="afterMessageId=example&size=50"
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/plan/status:
+    get:
+      operationId: getMessagePlanStatus
+      tags:
+        - Interactions
+      summary: 查询消息计划审批状态 / Get message plan status
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.
+          example: message-demo-001
+      responses:
+        "200":
+          description: 查询消息计划审批状态 / Get message plan status 的成功响应。 / Successful response for getMessagePlanStatus.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanStatus"
+              example:
+                pending: true
+                status: COMPLETED
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        使用 conversationId 和 messageId 检查计划审批是否仍在等待。
+
+        ### Use case
+        Check whether plan approval is pending using conversationId and messageId.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        使用 conversationId 和 messageId 检查计划审批是否仍在等待。
+
+        ### Behavior and side effects
+        Check whether plan approval is pending using conversationId and messageId.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        查询消息计划审批状态 / Get message plan status
+
+        ### Operation summary
+        查询消息计划审批状态 / Get message plan status
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/messages/message-demo-001/plan/status HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/messages/message-demo-001/plan/status"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal:
+    get:
+      operationId: getGoal
+      tags:
+        - Chat
+      summary: 读取当前目标 / Get current goal
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+      responses:
+        "200":
+          description: 读取当前目标 / Get current goal 的成功响应。 / Successful response for getGoal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentGoalView"
+              example:
+                goal:
+                  goalId: example
+                  goalRevision: 1
+                  objective: example
+                  phase: ACTIVE
+                  recordState: CURRENT
+                  activationState: ARMED
+                  effectivelyArmed: true
+                  blockedCode: ROUND_LIMIT
+                  blockedMessage: example
+                  completionMessage: example
+                  statusVersion: 1
+                  nextExecutionDueTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        无当前目标时返回 goal=null。
+
+        ### Use case
+        Return goal=null when no current goal exists.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        无当前目标时返回 goal=null。
+
+        ### Behavior and side effects
+        Return goal=null when no current goal exists.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        读取当前目标 / Get current goal
+
+        ### Operation summary
+        读取当前目标 / Get current goal
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/goal HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/goal"
+            RAW_QUERY=""
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+    patch:
+      operationId: editGoal
+      tags:
+        - Chat
+      summary: 编辑目标 / Edit goal
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+      responses:
+        "200":
+          description: 编辑目标 / Edit goal 的成功响应。 / Successful response for editGoal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentGoal"
+              example:
+                goalId: example
+                goalRevision: 1
+                objective: example
+                phase: ACTIVE
+                recordState: CURRENT
+                activationState: ARMED
+                effectivelyArmed: true
+                blockedCode: ROUND_LIMIT
+                blockedMessage: example
+                completionMessage: example
+                statusVersion: 1
+                nextExecutionDueTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "410":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditAgentGoalInput"
+            example:
+              goalId: example
+              goalRevision: 1
+              objective: example
+        description: 编辑目标 / Edit goal 的 JSON 请求参数。 / JSON request parameters for editGoal.
+      description: |-
+        ### 使用场景
+        携带 goalId 和 goalRevision 更新目标正文，不改变激活状态；陈旧版本返回 409，失效目标返回 410。
+
+        ### Use case
+        Update the objective with goalId and goalRevision without changing activation; stale revisions return 409 and invalidated goals return 410.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        携带 goalId 和 goalRevision 更新目标正文，不改变激活状态；陈旧版本返回 409，失效目标返回 410。
+
+        ### Behavior and side effects
+        Update the objective with goalId and goalRevision without changing activation; stale revisions return 409 and invalidated goals return 410.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        编辑目标 / Edit goal
+
+        ### Operation summary
+        编辑目标 / Edit goal
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            PATCH /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/goal HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+            Content-Type: application/json
+
+            {
+              "goalId": "example",
+              "goalRevision": 1,
+              "objective": "example"
+            }
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/goal"
+            RAW_QUERY=""
+            BODY=$(cat <<'JSON'
+            {
+              "goalId": "example",
+              "goalRevision": 1,
+              "objective": "example"
+            }
+            JSON
+            )
+            eval "$(node scripts/sign-request.mjs --method PATCH --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
+
+            curl --request PATCH "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
+              -H "Content-Type: application/json" \
+              --data-binary "$BODY"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/history:
+    get:
+      operationId: getGoalHistory
+      tags:
+        - Chat
+      summary: 查询目标历史 / Get goal history
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          description: 分页信息 / page metadata。
+          example: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          description: 单页记录数。 / Number of records per page.
+          example: 20
+      responses:
+        "200":
+          description: 查询目标历史 / Get goal history 的成功响应。 / Successful response for getGoalHistory.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentGoalHistory"
+              example:
+                items:
+                  - goalId: example
+                    goalRevision: 1
+                    objective: example
+                    phase: ACTIVE
+                    recordState: CURRENT
+                    activationState: ARMED
+                    effectivelyArmed: true
+                    blockedCode: ROUND_LIMIT
+                    blockedMessage: example
+                    completionMessage: example
+                    statusVersion: 1
+                    nextExecutionDueTime: 2026-01-15T08:00:00Z
+                page: 1
+                size: 1
+                hasNext: true
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      description: |-
+        ### 使用场景
+        分页读取当前会话的目标历史。
+
+        ### Use case
+        Read paged goal history for the conversation.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        分页读取当前会话的目标历史。
+
+        ### Behavior and side effects
+        Read paged goal history for the conversation.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        查询目标历史 / Get goal history
+
+        ### Operation summary
+        查询目标历史 / Get goal history
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            GET /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/goal/history?page=0&size=20 HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/goal/history"
+            RAW_QUERY="page=0&size=20"
+            eval "$(node scripts/sign-request.mjs --method GET --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --format shell)"
+
+            curl --request GET "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/pause:
+    post:
+      operationId: pauseGoal
+      tags:
+        - Chat
+      summary: 暂停目标 / Pause goal
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+      responses:
+        "201":
+          description: 暂停目标 / Pause goal 的成功响应。 / Successful response for pauseGoal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentGoal"
+              example:
+                goalId: example
+                goalRevision: 1
+                objective: example
+                phase: ACTIVE
+                recordState: CURRENT
+                activationState: ARMED
+                effectivelyArmed: true
+                blockedCode: ROUND_LIMIT
+                blockedMessage: example
+                completionMessage: example
+                statusVersion: 1
+                nextExecutionDueTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "410":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentGoalRefInput"
+            example:
+              goalId: example
+              goalRevision: 1
+        description: 暂停目标 / Pause goal 的 JSON 请求参数。 / JSON request parameters for pauseGoal.
+      description: |-
+        ### 使用场景
+        携带目标标识与版本，暂停并撤销自动续跑授权。
+
+        ### Use case
+        Pause the identified goal at the expected revision and revoke automatic continuation.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        携带目标标识与版本，暂停并撤销自动续跑授权。
+
+        ### Behavior and side effects
+        Pause the identified goal at the expected revision and revoke automatic continuation.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        暂停目标 / Pause goal
+
+        ### Operation summary
+        暂停目标 / Pause goal
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/goal/pause HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+            Content-Type: application/json
+
+            {
+              "goalId": "example",
+              "goalRevision": 1
+            }
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/goal/pause"
+            RAW_QUERY=""
+            BODY=$(cat <<'JSON'
+            {
+              "goalId": "example",
+              "goalRevision": 1
+            }
+            JSON
+            )
+            eval "$(node scripts/sign-request.mjs --method POST --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
+
+            curl --request POST "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
+              -H "Content-Type: application/json" \
+              --data-binary "$BODY"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/resume:
+    post:
+      operationId: resumeGoal
+      tags:
+        - Chat
+      summary: 恢复目标 / Resume goal
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+      responses:
+        "201":
+          description: 恢复目标 / Resume goal 的成功响应。 / Successful response for resumeGoal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentGoal"
+              example:
+                goalId: example
+                goalRevision: 1
+                objective: example
+                phase: ACTIVE
+                recordState: CURRENT
+                activationState: ARMED
+                effectivelyArmed: true
+                blockedCode: ROUND_LIMIT
+                blockedMessage: example
+                completionMessage: example
+                statusVersion: 1
+                nextExecutionDueTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "410":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentGoalRefInput"
+            example:
+              goalId: example
+              goalRevision: 1
+        description: 恢复目标 / Resume goal 的 JSON 请求参数。 / JSON request parameters for resumeGoal.
+      description: |-
+        ### 使用场景
+        携带目标标识与版本，恢复目标并重新授予自动续跑授权。
+
+        ### Use case
+        Resume the identified goal at the expected revision and authorize automatic continuation.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        携带目标标识与版本，恢复目标并重新授予自动续跑授权。
+
+        ### Behavior and side effects
+        Resume the identified goal at the expected revision and authorize automatic continuation.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        恢复目标 / Resume goal
+
+        ### Operation summary
+        恢复目标 / Resume goal
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/goal/resume HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+            Content-Type: application/json
+
+            {
+              "goalId": "example",
+              "goalRevision": 1
+            }
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/goal/resume"
+            RAW_QUERY=""
+            BODY=$(cat <<'JSON'
+            {
+              "goalId": "example",
+              "goalRevision": 1
+            }
+            JSON
+            )
+            eval "$(node scripts/sign-request.mjs --method POST --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
+
+            curl --request POST "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
+              -H "Content-Type: application/json" \
+              --data-binary "$BODY"
+  /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/clear:
+    post:
+      operationId: clearGoal
+      tags:
+        - Chat
+      summary: 清除目标 / Clear goal
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          x-lingya-sdk-bound-from: channelId
+          description: Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.
+          example: 11111111-2222-4333-8444-555555555555
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+          example: conversation-demo-001
+      responses:
+        "201":
+          description: 清除目标 / Clear goal 的成功响应。 / Successful response for clearGoal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentGoal"
+              example:
+                goalId: example
+                goalRevision: 1
+                objective: example
+                phase: ACTIVE
+                recordState: CURRENT
+                activationState: ARMED
+                effectivelyArmed: true
+                blockedCode: ROUND_LIMIT
+                blockedMessage: example
+                completionMessage: example
+                statusVersion: 1
+                nextExecutionDueTime: 2026-01-15T08:00:00Z
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "410":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentGoalRefInput"
+            example:
+              goalId: example
+              goalRevision: 1
+        description: 清除目标 / Clear goal 的 JSON 请求参数。 / JSON request parameters for clearGoal.
+      description: |-
+        ### 使用场景
+        携带目标标识与版本，清除目标并保留墓碑。
+
+        ### Use case
+        Clear the identified goal at the expected revision and preserve its tombstone.
+
+        ### 前置条件
+        有效渠道身份；会话资源必须属于当前用户。
+
+        ### Prerequisites
+        Valid channel identity; conversation resources must belong to the current user.
+
+        ### 行为与副作用
+        携带目标标识与版本，清除目标并保留墓碑。
+
+        ### Behavior and side effects
+        Clear the identified goal at the expected revision and preserve its tombstone.
+
+        ### 后续调用
+        根据返回的权威状态更新客户端。
+
+        ### Next step
+        Update the client using the returned authoritative state.
+
+        ### 接口摘要
+        清除目标 / Clear goal
+
+        ### Operation summary
+        清除目标 / Clear goal
+      x-codeSamples:
+        - lang: HTTP
+          label: Raw HTTP
+          source: |-
+            POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001/goal/clear HTTP/1.1
+            Host: lingtong.lingya.tech
+            X-OpenAPI-AK: <access-key>
+            X-OpenAPI-Timestamp: <unix-seconds>
+            X-OpenAPI-Nonce: <base64url-nonce>
+            X-OpenAPI-User: <base64url-external-user>
+            X-OpenAPI-Signature: <lowercase-hex-signature>
+            Content-Type: application/json
+
+            {
+              "goalId": "example",
+              "goalRevision": 1
+            }
+        - lang: Shell
+          label: cURL + local HMAC
+          source: |-
+            BASE_URL="${BASE_URL:-https://lingtong.lingya.tech}"
+            CHANNEL_ID="${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}"
+            EXTERNAL_USER_ID="${EXTERNAL_USER_ID:-external-user-demo}"
+            RAW_PATH="/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001/goal/clear"
+            RAW_QUERY=""
+            BODY=$(cat <<'JSON'
+            {
+              "goalId": "example",
+              "goalRevision": 1
+            }
+            JSON
+            )
+            eval "$(node scripts/sign-request.mjs --method POST --path "$RAW_PATH" --query "$RAW_QUERY" --user "$EXTERNAL_USER_ID" --content-type application/json --body "$BODY" --format shell)"
+
+            curl --request POST "${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}" \
+              -H "X-OpenAPI-AK: ${X_OPENAPI_AK}" \
+              -H "X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}" \
+              -H "X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}" \
+              -H "X-OpenAPI-User: ${X_OPENAPI_USER}" \
+              -H "X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}" \
+              -H "Content-Type: application/json" \
+              --data-binary "$BODY"
 components:
   securitySchemes:
     OpenApiAccessKey:
@@ -6910,6 +8726,11 @@ components:
       in: header
       name: X-OpenAPI-Signature
       description: Lowercase hexadecimal HMAC-SHA256 signature. The secret is never sent.
+    OpenApiToken:
+      type: apiKey
+      in: header
+      name: X-OpenAPI-Token
+      description: 十分钟内有效的一次性渠道令牌，绑定签发时的渠道和用户身份。截止 expiresAt 前仅能认证一个新请求；认证成功即消费，业务失败不退还。每次新请求、重试或 SSE/WebSocket 重连都必须重新签发，不得缓存复用。使用 X-OpenAPI-Token，与所有 HMAC 鉴权头互斥，不能用于 presign。 / A single-use channel token valid for ten minutes, bound to the issuing channel and user. It authenticates only one new request before expiresAt and is consumed on successful authentication even if the business operation fails. Obtain a fresh token for every new request, retry, or SSE/WebSocket reconnection; never cache or reuse it. Send X-OpenAPI-Token without any HMAC authentication headers; tokens cannot call presign.
   responses:
     Error:
       description: 接口错误。 / API error.
@@ -7234,6 +9055,16 @@ components:
           items:
             $ref: "#/components/schemas/AiChatFileRef"
           description: 字段 files / files field。
+        planMode:
+          type:
+            - boolean
+            - "null"
+          description: 计划模式；省略时沿用会话设置。 / Plan mode; omitted values preserve the conversation setting.
+        goalMode:
+          type:
+            - boolean
+            - "null"
+          description: 创建新目标；不能与计划模式同时开启，目标正文最多 4000 字符。 / Create a goal; cannot be enabled together with plan mode, and the objective is limited to 4000 characters.
       description: AiChatInput 的公开协议结构。 / Public contract for ai chat input.
       additionalProperties: false
     AiChatStreamInput:
@@ -7244,6 +9075,7 @@ components:
         messageId:
           type: string
           minLength: 1
+          maxLength: 64
           description: 消息 ID / message ID。
       description: AiChatStreamInput 的公开协议结构。 / Public contract for ai chat stream input.
       additionalProperties: false
@@ -7289,6 +9121,11 @@ components:
           format: int32
           minimum: 0
           description: 字段 maxAttachmentCount / max attachment count field。
+        goal:
+          oneOf:
+            - $ref: "#/components/schemas/AgentGoalConfig"
+            - type: "null"
+          description: 字段 goal / goal field。
       description: AgentsConfig 的公开协议结构。 / Public contract for agents config.
       additionalProperties: false
     ConversationConfig:
@@ -7299,6 +9136,13 @@ components:
             - $ref: "#/components/schemas/ChatModelSpec"
             - type: "null"
           description: 字段 lastChatModelSpec / last chat model spec field。
+        planMode:
+          type: boolean
+          default: false
+          description: 字段 planMode / plan mode field。
+      required:
+        - lastChatModelSpec
+        - planMode
       description: ConversationConfig 的公开协议结构。 / Public contract for conversation config.
       additionalProperties: false
     ConversationSummary:
@@ -7365,17 +9209,32 @@ components:
           type: string
           format: date-time
           description: 最后更新时间 / last update time。
+        groupId:
+          oneOf:
+            - type: integer
+              format: int64
+            - type: "null"
+          description: 字段 groupId / group id field。
+        groupName:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 groupName / group name field。
       description: ConversationSummary 的公开协议结构。 / Public contract for conversation summary.
     ConversationSummaryList:
       type: object
       required:
         - records
+        - page
       properties:
         records:
           type: array
           items:
             $ref: "#/components/schemas/ConversationSummary"
           description: 记录列表 / records。
+        page:
+          $ref: "#/components/schemas/PageInfo"
+          description: 分页信息 / page metadata。
       description: ConversationSummaryList 的公开协议结构。 / Public contract for conversation summary list.
       additionalProperties: false
     ConversationStats:
@@ -7683,6 +9542,7 @@ components:
         - text
         - executionType
         - type
+        - metadata
       properties:
         text:
           type: string
@@ -7701,12 +9561,6 @@ components:
                 $ref: "#/components/schemas/MediaAttachment"
             - type: "null"
           description: 字段 attachments / attachments field。
-        metadataRawJson:
-          oneOf:
-            - type: string
-              contentMediaType: application/json
-            - type: "null"
-          description: 字段 metadataRawJson / metadata raw json field。
         executionType:
           type: string
           description: 字段 executionType / execution type field。
@@ -7714,6 +9568,10 @@ components:
           type: string
           const: USER
           description: 类型判别值 / type discriminator。
+        metadata:
+          type: object
+          additionalProperties: true
+          description: 消息来源定义的动态 JSON 元数据。 / Dynamic JSON metadata defined by the message source.
       description: ConversationUserMessage 的公开协议结构。 / Public contract for conversation user message.
     ConversationMessage:
       type: object
@@ -8224,8 +10082,6 @@ components:
         - $ref: "#/components/schemas/AiChatErrorBriefEvent"
         - $ref: "#/components/schemas/AiChatStartBriefEvent"
         - $ref: "#/components/schemas/AiChatThinkBriefEvent"
-        - $ref: "#/components/schemas/AiChatRequestBriefEvent"
-        - $ref: "#/components/schemas/AiChatResponseBriefEvent"
         - $ref: "#/components/schemas/AiChatMessageBriefEvent"
         - $ref: "#/components/schemas/AiChatToolExecutionBriefEvent"
         - $ref: "#/components/schemas/AiChatSubAgentCallBriefEvent"
@@ -8243,8 +10099,6 @@ components:
           error: "#/components/schemas/AiChatErrorBriefEvent"
           start: "#/components/schemas/AiChatStartBriefEvent"
           think: "#/components/schemas/AiChatThinkBriefEvent"
-          chat-client-request: "#/components/schemas/AiChatRequestBriefEvent"
-          chat-client-response: "#/components/schemas/AiChatResponseBriefEvent"
           message: "#/components/schemas/AiChatMessageBriefEvent"
           tool-execution: "#/components/schemas/AiChatToolExecutionBriefEvent"
           tool-execution-sub-agent-call: "#/components/schemas/AiChatSubAgentCallBriefEvent"
@@ -8281,35 +10135,6 @@ components:
             $ref: "#/components/schemas/AiChatEventsBatchSkipped"
           description: 字段 skipped / skipped field。
       description: AiChatEventsBatch 的公开协议结构。 / Public contract for ai chat events batch.
-    ConversationShareInput:
-      type: object
-      properties:
-        password:
-          type:
-            - string
-            - "null"
-          pattern: ^[0-9]{6}$
-          description: 字段 password / password field。
-        expiresAt:
-          type:
-            - string
-            - "null"
-          format: date-time
-          description: 字段 expiresAt / expires at field。
-      description: ConversationShareInput 的公开协议结构。 / Public contract for conversation share input.
-      additionalProperties: false
-    ConversationShareList:
-      type: object
-      additionalProperties: false
-      required:
-        - records
-      properties:
-        records:
-          type: array
-          items:
-            $ref: "#/components/schemas/ConversationShareRecord"
-          description: 记录列表 / records。
-      description: ConversationShareList 的公开协议结构。 / Public contract for conversation share list.
     PlanApprovalInput:
       type: object
       required:
@@ -9478,215 +11303,6 @@ components:
           LOCAL_TIME: "#/components/schemas/LocalTimeChartColumn"
           INSTANT: "#/components/schemas/InstantChartColumn"
       description: ChartColumnData 的公开协议结构。 / Public contract for chart column data.
-    ToolCall:
-      type: object
-      additionalProperties: false
-      required:
-        - id
-        - type
-        - name
-        - arguments
-      properties:
-        id:
-          type: string
-          description: 字段 id / id field。
-        type:
-          type: string
-          description: 类型判别值 / type discriminator。
-        name:
-          type: string
-          description: 字段 name / name field。
-        arguments:
-          type: string
-          contentMediaType: application/json
-          description: 字段 arguments / arguments field。
-      description: ToolCall 的公开协议结构。 / Public contract for tool call.
-    ToolResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - id
-        - name
-        - status
-        - responseData
-        - metadataRawJson
-      properties:
-        id:
-          type: string
-          description: 字段 id / id field。
-        name:
-          type: string
-          description: 字段 name / name field。
-        status:
-          type: string
-          description: 当前状态 / current status。
-        responseData:
-          type: string
-          description: 字段 responseData / response data field。
-        metadataRawJson:
-          type: string
-          contentMediaType: application/json
-          description: 字段 metadataRawJson / metadata raw json field。
-      description: ToolResponse 的公开协议结构。 / Public contract for tool response.
-    SystemChatMessage:
-      type: object
-      additionalProperties: false
-      required:
-        - type
-        - text
-      properties:
-        type:
-          type: string
-          const: SYSTEM
-          description: 类型判别值 / type discriminator。
-        text:
-          type: string
-          description: 字段 text / text field。
-        metadataRawJson: &a7
-          oneOf:
-            - type: string
-              contentMediaType: application/json
-            - type: "null"
-          description: 字段 metadataRawJson / metadata raw json field。
-      description: SystemChatMessage 的公开协议结构。 / Public contract for system chat message.
-    UserChatMessage:
-      type: object
-      additionalProperties: false
-      required:
-        - type
-        - text
-      properties:
-        type:
-          type: string
-          const: USER
-          description: 类型判别值 / type discriminator。
-        text:
-          type: string
-          description: 字段 text / text field。
-        multimodalAttachments:
-          oneOf:
-            - type: array
-              items:
-                $ref: "#/components/schemas/MultimodalMediaAttachment"
-            - type: "null"
-          description: 字段 multimodalAttachments / multimodal attachments field。
-        attachments:
-          oneOf:
-            - type: array
-              items:
-                $ref: "#/components/schemas/MediaAttachment"
-            - type: "null"
-          description: 字段 attachments / attachments field。
-        metadataRawJson: *a7
-      description: UserChatMessage 的公开协议结构。 / Public contract for user chat message.
-    AssistantChatMessage:
-      type: object
-      additionalProperties: false
-      required:
-        - type
-        - toolCalls
-      properties:
-        type:
-          type: string
-          const: ASSISTANT
-          description: 类型判别值 / type discriminator。
-        text:
-          oneOf:
-            - type: string
-            - type: "null"
-          description: 字段 text / text field。
-        reasoningText:
-          oneOf:
-            - type: string
-            - type: "null"
-          description: 字段 reasoningText / reasoning text field。
-        toolCalls:
-          type: array
-          items:
-            $ref: "#/components/schemas/ToolCall"
-          description: 字段 toolCalls / tool calls field。
-        metadataRawJson: *a7
-      description: AssistantChatMessage 的公开协议结构。 / Public contract for assistant chat message.
-    ToolResponseChatMessage:
-      type: object
-      additionalProperties: false
-      required:
-        - type
-        - responses
-      properties:
-        type:
-          type: string
-          const: TOOL
-          description: 类型判别值 / type discriminator。
-        responses:
-          type: array
-          items:
-            $ref: "#/components/schemas/ToolResponse"
-          description: 字段 responses / responses field。
-        metadataRawJson: *a7
-      description: ToolResponseChatMessage 的公开协议结构。 / Public contract for tool response chat message.
-    ChatMessage:
-      oneOf:
-        - $ref: "#/components/schemas/SystemChatMessage"
-        - $ref: "#/components/schemas/UserChatMessage"
-        - $ref: "#/components/schemas/AssistantChatMessage"
-        - $ref: "#/components/schemas/ToolResponseChatMessage"
-      discriminator:
-        propertyName: type
-        mapping:
-          SYSTEM: "#/components/schemas/SystemChatMessage"
-          USER: "#/components/schemas/UserChatMessage"
-          ASSISTANT: "#/components/schemas/AssistantChatMessage"
-          TOOL: "#/components/schemas/ToolResponseChatMessage"
-      description: ChatMessage 的公开协议结构。 / Public contract for chat message.
-    ChatOptions:
-      type: object
-      additionalProperties: false
-      required: []
-      properties:
-        model:
-          oneOf:
-            - type: string
-            - type: "null"
-          description: 字段 model / model field。
-        frequencyPenalty:
-          oneOf:
-            - type: number
-              format: double
-            - type: "null"
-          description: 字段 frequencyPenalty / frequency penalty field。
-        maxTokens:
-          oneOf:
-            - type: integer
-              format: int32
-            - type: "null"
-          description: 字段 maxTokens / max tokens field。
-        presencePenalty:
-          oneOf:
-            - type: number
-              format: double
-            - type: "null"
-          description: 字段 presencePenalty / presence penalty field。
-        stopSequences:
-          oneOf:
-            - type: array
-              items:
-                type: string
-            - type: "null"
-          description: 字段 stopSequences / stop sequences field。
-        temperature:
-          oneOf:
-            - type: number
-              format: double
-            - type: "null"
-          description: 字段 temperature / temperature field。
-        topP:
-          oneOf:
-            - type: number
-              format: double
-            - type: "null"
-          description: 字段 topP / top p field。
-      description: ChatOptions 的公开协议结构。 / Public contract for chat options.
     ArtifactInfo:
       type: object
       additionalProperties: false
@@ -9804,49 +11420,6 @@ components:
           type: string
           description: 消息正文 / message text。
       description: AiChatThinkBriefEvent 的公开协议结构。 / Public contract for ai chat think brief event.
-    AiChatRequestBriefEvent:
-      type: object
-      additionalProperties: false
-      required:
-        - type
-        - messages
-      properties:
-        type:
-          type: string
-          const: chat-client-request
-          description: 类型判别值 / type discriminator。
-        messages:
-          type: array
-          items:
-            $ref: "#/components/schemas/ChatMessage"
-          description: 字段 messages / messages field。
-        chatOptions:
-          oneOf:
-            - $ref: "#/components/schemas/ChatOptions"
-            - type: "null"
-          description: 字段 chatOptions / chat options field。
-      description: AiChatRequestBriefEvent 的公开协议结构。 / Public contract for ai chat request brief event.
-    AiChatResponseBriefEvent:
-      type: object
-      additionalProperties: false
-      required:
-        - type
-        - assistantMessages
-        - usage
-      properties:
-        type:
-          type: string
-          const: chat-client-response
-          description: 类型判别值 / type discriminator。
-        assistantMessages:
-          type: array
-          items:
-            $ref: "#/components/schemas/AssistantChatMessage"
-          description: 字段 assistantMessages / assistant messages field。
-        usage:
-          $ref: "#/components/schemas/Usage"
-          description: 字段 usage / usage field。
-      description: AiChatResponseBriefEvent 的公开协议结构。 / Public contract for ai chat response brief event.
     AiChatMessageBriefEvent:
       type: object
       additionalProperties: false
@@ -10673,69 +12246,244 @@ components:
           type: string
           description: 字段 reason / reason field。
       description: AiChatEventsBatchSkipped 的公开协议结构。 / Public contract for ai chat events batch skipped.
-    ConversationShareCreated:
+    ReturnedReferenceList:
+      type: array
+      items:
+        $ref: "#/components/schemas/ReturnedReference"
+      minItems: 1
+      description: ReturnedReferenceList 的公开协议结构。 / Public contract for returned reference list.
+    OpenApiToken:
       type: object
-      additionalProperties: false
-      required:
-        - shareId
-        - shareCode
-        - serverName
-        - passwordRequired
       properties:
-        shareId:
-          type: integer
-          format: int64
-          description: 字段 shareId / share id field。
-        shareCode:
+        token:
           type: string
-          description: 字段 shareCode / share code field。
-        serverName:
+          description: 一次性令牌原文，不得写入日志。 / Single-use token; never log its value.
+        expiresAt:
           type: string
-          description: 字段 serverName / server name field。
-        passwordRequired:
+          format: date-time
+          description: 未消费令牌的截止时间，不代表截止前可以重复使用。 / Deadline for an unused token, not a reusable session lifetime.
+      required:
+        - token
+        - expiresAt
+      description: 十分钟内有效的一次性渠道令牌，绑定签发时的渠道和用户身份。截止 expiresAt 前仅能认证一个新请求；认证成功即消费，业务失败不退还。每次新请求、重试或 SSE/WebSocket 重连都必须重新签发，不得缓存复用。使用 X-OpenAPI-Token，与所有 HMAC 鉴权头互斥，不能用于 presign。 / A single-use channel token valid for ten minutes, bound to the issuing channel and user. It authenticates only one new request before expiresAt and is consumed on successful authentication even if the business operation fails. Obtain a fresh token for every new request, retry, or SSE/WebSocket reconnection; never cache or reuse it. Send X-OpenAPI-Token without any HMAC authentication headers; tokens cannot call presign.
+      additionalProperties: false
+    AgentGoalConfig:
+      type: object
+      properties:
+        supported:
           type: boolean
-          description: 字段 passwordRequired / password required field。
-        expiresAt:
+          description: 字段 supported / supported field。
+        continuationEnabled:
+          type: boolean
+          description: 字段 continuationEnabled / continuation enabled field。
+      required:
+        - supported
+        - continuationEnabled
+      description: AgentGoalConfig 的公开协议结构。 / Public contract for agent goal config.
+      additionalProperties: false
+    AgentGoalRefInput:
+      type: object
+      properties:
+        goalId:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: 字段 goalId / goal id field。
+        goalRevision:
+          type: integer
+          format: int32
+          minimum: 1
+          description: 字段 goalRevision / goal revision field。
+      required:
+        - goalId
+        - goalRevision
+      description: AgentGoalRefInput 的公开协议结构。 / Public contract for agent goal ref input.
+      additionalProperties: false
+    EditAgentGoalInput:
+      type: object
+      properties:
+        goalId:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: 字段 goalId / goal id field。
+        goalRevision:
+          type: integer
+          format: int32
+          minimum: 1
+          description: 字段 goalRevision / goal revision field。
+        objective:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          description: 字段 objective / objective field。
+      required:
+        - goalId
+        - goalRevision
+        - objective
+      description: EditAgentGoalInput 的公开协议结构。 / Public contract for edit agent goal input.
+      additionalProperties: false
+    AgentGoal:
+      type: object
+      properties:
+        goalId:
+          type: string
+          description: 字段 goalId / goal id field。
+        goalRevision:
+          type: integer
+          format: int32
+          description: 字段 goalRevision / goal revision field。
+        objective:
+          type: string
+          description: 字段 objective / objective field。
+        phase:
+          type: string
+          enum:
+            - ACTIVE
+            - PAUSED
+            - BLOCKED
+            - COMPLETE
+          description: 字段 phase / phase field。
+        recordState:
+          type: string
+          enum:
+            - CURRENT
+            - CLEARED
+            - REPLACED
+          description: 字段 recordState / record state field。
+        activationState:
+          type: string
+          enum:
+            - ARMED
+            - DISARMED
+          description: 字段 activationState / activation state field。
+        effectivelyArmed:
+          type: boolean
+          description: 字段 effectivelyArmed / effectively armed field。
+        blockedCode:
           oneOf:
             - type: string
-              format: date-time
+              enum:
+                - ROUND_LIMIT
+                - STEP_LIMIT
+                - ARTIFACT_COMMIT_FAILED
+                - HUMAN_INPUT_REQUIRED
+                - QUEUE_FAILED
+                - PROMPT_REJECTED
+                - AUTH_REVOKED
+                - STORAGE_UNAVAILABLE
+                - EXECUTION_FAILED
+                - MODEL_REPORTED
             - type: "null"
-          description: 字段 expiresAt / expires at field。
-      description: ConversationShareCreated 的公开协议结构。 / Public contract for conversation share created.
-    ConversationShareRecord:
-      type: object
-      additionalProperties: false
-      required:
-        - shareId
-        - shareCode
-        - serverName
-        - accessMode
-        - status
-        - createdTime
-        - lastUpdateTime
-      properties:
-        shareId:
+          description: 字段 blockedCode / blocked code field。
+        blockedMessage:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 blockedMessage / blocked message field。
+        completionMessage:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 completionMessage / completion message field。
+        statusVersion:
           type: integer
           format: int64
-          description: 字段 shareId / share id field。
-        shareCode:
-          type: string
-          description: 字段 shareCode / share code field。
-        serverName:
-          type: string
-          description: 字段 serverName / server name field。
-        accessMode:
-          type: string
-          description: 字段 accessMode / access mode field。
-        status:
-          type: string
-          description: 当前状态 / current status。
-        expiresAt:
+          description: 字段 statusVersion / status version field。
+        nextExecutionDueTime:
           oneOf:
             - type: string
               format: date-time
             - type: "null"
-          description: 字段 expiresAt / expires at field。
+          description: 字段 nextExecutionDueTime / next execution due time field。
+      required:
+        - goalId
+        - goalRevision
+        - objective
+        - phase
+        - recordState
+        - activationState
+        - effectivelyArmed
+        - blockedCode
+        - blockedMessage
+        - completionMessage
+        - statusVersion
+        - nextExecutionDueTime
+      description: AgentGoal 的公开协议结构。 / Public contract for agent goal.
+      additionalProperties: false
+    AgentGoalView:
+      type: object
+      properties:
+        goal:
+          oneOf:
+            - $ref: "#/components/schemas/AgentGoal"
+            - type: "null"
+          description: 字段 goal / goal field。
+      required:
+        - goal
+      description: AgentGoalView 的公开协议结构。 / Public contract for agent goal view.
+      additionalProperties: false
+    AgentGoalHistory:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentGoal"
+          description: 字段 items / items field。
+        page:
+          type: integer
+          format: int32
+          description: 分页信息 / page metadata。
+        size:
+          type: integer
+          format: int32
+          description: 大小（字节）或分页容量 / byte size or page size。
+        hasNext:
+          type: boolean
+          description: 字段 hasNext / has next field。
+      required:
+        - items
+        - page
+        - size
+        - hasNext
+      description: AgentGoalHistory 的公开协议结构。 / Public contract for agent goal history.
+      additionalProperties: false
+    ConversationGroupNameInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+          description: 字段 name / name field。
+      required:
+        - name
+      description: ConversationGroupNameInput 的公开协议结构。 / Public contract for conversation group name input.
+      additionalProperties: false
+    UpdateConversationGroupInput:
+      type: object
+      properties:
+        groupId:
+          oneOf:
+            - type: integer
+              format: int64
+            - type: "null"
+          description: 字段 groupId / group id field。
+      required:
+        - groupId
+      description: UpdateConversationGroupInput 的公开协议结构。 / Public contract for update conversation group input.
+      additionalProperties: false
+    ConversationGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 字段 id / id field。
+        name:
+          type: string
+          description: 字段 name / name field。
         createdTime:
           type: string
           format: date-time
@@ -10744,24 +12492,109 @@ components:
           type: string
           format: date-time
           description: 最后更新时间 / last update time。
-      description: ConversationShareRecord 的公开协议结构。 / Public contract for conversation share record.
-    ConversationShareRevoked:
-      type: object
-      additionalProperties: false
       required:
-        - shareId
+        - id
+        - name
+        - createdTime
+        - lastUpdateTime
+      description: ConversationGroup 的公开协议结构。 / Public contract for conversation group.
+      additionalProperties: false
+    ConversationGroupList:
+      type: object
       properties:
-        shareId:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationGroup"
+          description: 记录列表 / records。
+      required:
+        - records
+      description: ConversationGroupList 的公开协议结构。 / Public contract for conversation group list.
+      additionalProperties: false
+    ConversationGroupDeleted:
+      type: object
+      properties:
+        groupId:
           type: integer
           format: int64
-          description: 字段 shareId / share id field。
-      description: ConversationShareRevoked 的公开协议结构。 / Public contract for conversation share revoked.
-    ReturnedReferenceList:
-      type: array
-      items:
-        $ref: "#/components/schemas/ReturnedReference"
-      minItems: 1
-      description: ReturnedReferenceList 的公开协议结构。 / Public contract for returned reference list.
+          description: 字段 groupId / group id field。
+        movedConversationCount:
+          type: integer
+          format: int32
+          description: 字段 movedConversationCount / moved conversation count field。
+      required:
+        - groupId
+        - movedConversationCount
+      description: ConversationGroupDeleted 的公开协议结构。 / Public contract for conversation group deleted.
+      additionalProperties: false
+    ConversationMetadata:
+      type: object
+      properties:
+        conversationId:
+          type: string
+          description: 会话 ID / conversation ID。
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - ARCHIVED
+            - DELETED
+          description: 当前状态 / current status。
+        title:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 标题 / title。
+        titleState:
+          type: string
+          description: 字段 titleState / title state field。
+        groupId:
+          oneOf:
+            - type: integer
+              format: int64
+            - type: "null"
+          description: 字段 groupId / group id field。
+        groupName:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 groupName / group name field。
+        lastUpdateTime:
+          type: string
+          format: date-time
+          description: 最后更新时间 / last update time。
+      required:
+        - conversationId
+        - status
+        - title
+        - titleState
+        - groupId
+        - groupName
+        - lastUpdateTime
+      description: ConversationMetadata 的公开协议结构。 / Public contract for conversation metadata.
+      additionalProperties: false
+    ConversationMessageSync:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationMessage"
+          description: 字段 messages / messages field。
+        nextMessageId:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: 字段 nextMessageId / next message id field。
+        hasMore:
+          type: boolean
+          description: 字段 hasMore / has more field。
+      required:
+        - messages
+        - nextMessageId
+        - hasMore
+      description: ConversationMessageSync 的公开协议结构。 / Public contract for conversation message sync.
+      additionalProperties: false
 x-lingya-hmac:
   algorithm: HMAC-SHA256
   version: OPENAPI-HMAC-SHA256-V1
@@ -10782,3 +12615,44 @@ x-lingya-hmac:
     - Build the final request URI and body bytes before signing.
     - Do not re-encode the path, query, JSON, or Content-Type after signing.
     - Content-Encoding is not supported. Request bodies are limited to 2 MiB.
+x-lingya-websocket:
+  path: /api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/stream/ws
+  method: GET
+  query:
+    messageId:
+      type: string
+      required: true
+  authentication:
+    tokenSubprotocolPrefix: xlt-openapi-token.
+    hmac: request-headers
+  frames:
+    ready:
+      required:
+        - id
+        - event
+      event: ready
+    business:
+      required:
+        - id
+        - event
+        - data
+      dataSchema: AiChatBriefEvent
+    complete:
+      required:
+        - id
+        - event
+      event: complete
+    transportError:
+      required:
+        - id
+        - event
+        - data
+      event: transport-error
+      data:
+        code: string
+        message: string
+  completion:
+    endEvent: end
+    closeOnEnd: true
+    completeFrame: complete
+    normalCloseCode: 1000

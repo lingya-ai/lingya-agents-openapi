@@ -1,0 +1,35 @@
+name: SDK generation determinism
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [typescript, python, rust, kotlin]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - uses: dtolnay/rust-toolchain@1.98.1
+        with:
+          components: rustfmt
+      - run: python -m pip install ruff==0.16.7
+      - run: npm ci
+      - run: npm run check
+      - name: Generate twice and compare all managed files
+        run: |
+          node scripts/generate-sdks.mjs --language=${{ matrix.language }} --output=/tmp/generated-sdk
+          node scripts/generate-sdks.mjs --language=${{ matrix.language }} --output=/tmp/generated-sdk --check

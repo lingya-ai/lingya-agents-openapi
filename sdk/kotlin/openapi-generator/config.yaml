@@ -1,0 +1,29 @@
+generatorName: kotlin
+library: jvm-retrofit2
+apiPackage: cloud.lingya.agents.sdk.generated.api
+modelPackage: cloud.lingya.agents.sdk.generated.model
+packageName: cloud.lingya.agents.sdk.generated
+globalProperties:
+  apiTests: "false"
+  modelTests: "false"
+  apiDocs: "false"
+  modelDocs: "false"
+  apis: ""
+  models: ""
+  supportingFiles: CollectionFormats.kt,Serializer.kt
+additionalProperties:
+  serializationLibrary: jackson
+  dateLibrary: java8
+  useCoroutines: "true"
+  enumUnknownDefaultCase: "true"
+  hideGenerationTimestamp: "true"
+typeMappings:
+  AiChatBriefEvent: AiChatBriefEvent
+  ToolExtension: ToolExtension
+  ChatMessage: ChatMessage
+  ChartColumnData: ChartColumnData
+importMappings:
+  AiChatBriefEvent: cloud.lingya.agents.sdk.event.AiChatBriefEvent
+  ToolExtension: cloud.lingya.agents.sdk.event.ToolExtension
+  ChatMessage: cloud.lingya.agents.sdk.event.ChatMessage
+  ChartColumnData: cloud.lingya.agents.sdk.event.ChartColumnData

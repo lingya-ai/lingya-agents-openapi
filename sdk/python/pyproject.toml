@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lingya-agents-sdk"
+version = "0.7.0"
+description = "Strongly typed Python SDK for Lingya Agents OpenAPI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "Lingya AI"}]
+dependencies = [
+  "httpx>=0.28,<1",
+  "websockets>=14,<16",
+  "pydantic>=2.11,<3",
+  "python-dateutil>=2.8.2",
+  "typing-extensions>=4.12",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+Repository = "https://github.com/lingya-ai/lingya-agents-sdk-python"
+Issues = "https://github.com/lingya-ai/lingya-agents-sdk-python/issues"
+
+[project.optional-dependencies]
+test = ["build>=1.2", "mypy>=1.17", "pytest>=8.4", "ruff>=0.12", "setuptools>=75", "wheel"]
+
+[tool.setuptools.packages.find]
+include = ["lingya_agents_sdk*"]
+exclude = ["lingya_agents_sdk.api*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["live: calls the real Lingya Agents service"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501", "UP007"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+packages = ["lingya_agents_sdk.client", "lingya_agents_sdk.bound_api", "lingya_agents_sdk.events", "lingya_agents_sdk.sse", "lingya_agents_sdk.async_client", "lingya_agents_sdk.async_bound_api", "lingya_agents_sdk.lifecycle", "lingya_agents_sdk.subscription"]
+
+[[tool.mypy.overrides]]
+module = ["lingya_agents_sdk.models.*"]
+ignore_errors = true

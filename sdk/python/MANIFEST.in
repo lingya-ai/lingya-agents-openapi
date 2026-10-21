@@ -1,0 +1,9 @@
+prune test
+prune build
+prune dist
+global-exclude __pycache__ *.py[cod]
+
+include CONTRACT_VERSION SDK_GENERATION.json
+recursive-include openapi *.yaml *.json
+recursive-include test-vectors *.json *.txt
+recursive-include docs *.md

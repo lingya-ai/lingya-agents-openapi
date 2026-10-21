@@ -1,0 +1,78 @@
+{
+  "name": "@lingya-ai/agents-sdk",
+  "version": "0.7.0",
+  "description": "Strongly typed TypeScript SDK for Lingya Agents OpenAPI with server HMAC and browser token authentication",
+  "author": "Lingya AI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lingya-ai/lingya-agents-sdk-typescript.git"
+  },
+  "homepage": "https://github.com/lingya-ai/lingya-agents-sdk-typescript#readme",
+  "bugs": {
+    "url": "https://github.com/lingya-ai/lingya-agents-sdk-typescript/issues"
+  },
+  "keywords": [
+    "lingya",
+    "agents",
+    "openapi",
+    "hmac",
+    "sse"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./dist/browser.d.ts",
+        "default": "./dist/browser.js"
+      },
+      "types": "./dist/index.d.ts",
+      "node": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "generate:bound": "node scripts/generate-bound-api.mjs",
+    "generate:finalize": "node scripts/finalize-generated.mjs",
+    "build": "tsc && tsc -p tsconfig.esm.json",
+    "check": "npm run build && npm run typecheck && npm run test && npm run audit:models && npm run package:smoke && npm run browser:smoke",
+    "typecheck": "tsc -p tsconfig.types.json",
+    "test": "tsx --test test/*.test.ts",
+    "test:live": "tsx --test test/live.test.ts",
+    "audit:models": "node scripts/audit-models.mjs",
+    "package:smoke": "node scripts/package-smoke.mjs",
+    "prepublishOnly": "npm run check",
+    "prepare": "npm run build",
+    "browser:smoke": "node scripts/browser-smoke.mjs",
+    "browser:102": "node scripts/browser-integration.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/ws": "^8.18.1",
+    "esbuild": "0.28.2",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

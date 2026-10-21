@@ -1,3 +1,4 @@
+import { updateChannelContract } from "./channel-contract.mjs";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import YAML from "yaml";
 import { groupGuides, operationGuides, formatOperationDescription } from "./documentation-data.mjs";
@@ -818,10 +819,10 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Lingya Agents OpenAPI",
-    version: "0.1.5",
+    version: "0.1.7",
     description: [
-      "本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，使用 OPENAPI-HMAC-SHA256-V1 验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。",
-      "This contract describes the public Lingya Agents channel API for trusted servers. Requests use OPENAPI-HMAC-SHA256-V1, and Studio administration endpoints are excluded. The online reference only displays requests and never collects or stores a secret in the browser.",
+      "本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，支持 OPENAPI-HMAC-SHA256-V1 签名或短期渠道令牌验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。",
+      "This contract describes the public Lingya Agents channel API for trusted servers. Requests use OPENAPI-HMAC-SHA256-V1 or short-lived channel tokens, and Studio administration endpoints are excluded. The online reference only displays requests and never collects or stores a secret in the browser.",
       "## 快速开始 / Quick start",
       "1. 读取 Configuration，确认模型和附件限制。 / Read Configuration to discover model and attachment limits.",
       "2. 在本地固定最终 method、raw path、raw query、Content-Type 和 body 字节，再生成签名。 / Finalize method, raw path, raw query, Content-Type, and body bytes locally before signing.",
@@ -1049,6 +1050,38 @@ const operationSummaries = {
   getWorkspaceFilePreview: "创建工作区文件预览地址 / Create a workspace file preview URL",
 };
 
+updateChannelContract({ spec, schemas, add, pathParam, queryParam, summaries: operationSummaries, guides: operationGuides });
+
+// WebSocket is a read-only transport extension, not an HTTP JSON operation.
+spec['x-lingya-websocket'] = {
+  path: '/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/stream/ws',
+  method: 'GET', query: { messageId: { type: 'string', required: true } },
+  authentication: { tokenSubprotocolPrefix: 'xlt-openapi-token.', hmac: 'request-headers' },
+  frames: {
+    ready: { required: ['id', 'event'], event: 'ready' },
+    business: { required: ['id', 'event', 'data'], dataSchema: 'AiChatBriefEvent' },
+    complete: { required: ['id', 'event'], event: 'complete' },
+    transportError: { required: ['id', 'event', 'data'], event: 'transport-error', data: { code: 'string', message: 'string' } },
+  },
+  completion: { endEvent: 'end', closeOnEnd: true, completeFrame: 'complete', normalCloseCode: 1000 },
+};
+// Only models reachable from public operations belong in the published SDK surface.
+const publicSchemas = new Set();
+const visitPublicSchema = (value) => {
+  if (!value || typeof value !== "object") return;
+  if (value.$ref?.startsWith("#/components/schemas/")) {
+    const name = value.$ref.split("/").at(-1);
+    if (!publicSchemas.has(name)) {
+      publicSchemas.add(name);
+      visitPublicSchema(schemas[name]);
+    }
+  }
+  for (const child of Object.values(value)) visitPublicSchema(child);
+};
+visitPublicSchema(spec.paths);
+visitPublicSchema(spec.components.responses);
+for (const name of Object.keys(schemas)) if (!publicSchemas.has(name)) delete schemas[name];
+
 const parameterDescriptions = {
   channelId: "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
   conversationId: "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
@@ -1101,7 +1134,7 @@ const exampleValues = {
   kind: "FILE", lastChatModelSpec: null, level: "warning", maker: "OPENAI", maxAttachmentCount: 10, message: "Example response",
   messageId: "message-demo-001", mimeType: "application/pdf", model: "example-model", modelDescription: "Example model used for integration",
   modelLabel: "Example model", modelName: "example-model", module: "ai-chat-attachments", nonce: "bm9uY2UtZm9yLWRvY3M",
-  password: "123456", path: "reports/quarterly-report.pdf", planId: "plan-demo-001", prefix: "reports/", probeId: "probe-demo-001",
+  planMode: false, goalMode: false, password: "123456", path: "reports/quarterly-report.pdf", planId: "plan-demo-001", prefix: "reports/", probeId: "probe-demo-001",
   publishId: "publish-demo-001", query: "Summarize the quarterly report", question: "Should the plan continue?", questionDetails: "Review the proposed steps.",
   questionId: "question-demo-001", rawJson: "{}", referenceId: 1001, resultId: "sql-result-demo-001", serverName: "lingtong.lingya.tech",
   shareCode: "share-demo-code", shareId: 1001, status: "COMPLETED", summary: "Example summary", title: "Quarterly report summary",
@@ -1163,7 +1196,7 @@ function encodeQueryValue(value) {
 
 function buildOperationExample(path, method, operation) {
   for (const parameter of operation.parameters) {
-    const value = parameterExamples[parameter.name] ?? schemaExample(parameter.schema, parameter.name);
+    const value = parameter.schema?.default ?? parameter.schema?.enum?.[0] ?? parameterExamples[parameter.name] ?? schemaExample(parameter.schema, parameter.name);
     parameter.example = parameter.schema?.type === "array" && !Array.isArray(value) ? [value] : value;
   }
   const rawPath = path.replaceAll(/\{([^}]+)\}/g, (_, name) => encodeURIComponent(String(parameterExamples[name] ?? name)));
@@ -1238,7 +1271,7 @@ const describeField = (name) => `${fieldLabels[name] ?? `字段 ${name} / ${word
 const walkSchema = (node, propertyName) => {
   if (!node || typeof node !== "object" || Array.isArray(node)) return;
   if (propertyName && !node.description?.includes(" / ")) node.description = `${describeField(propertyName)}${node.description ? ` ${node.description}` : ""}`;
-  if (node.type === "object") node.additionalProperties = false;
+  if (node.type === "object" && node !== schemas.ConversationUserMessage.properties.metadata) node.additionalProperties = false;
   if (node.properties) for (const [name, property] of Object.entries(node.properties)) walkSchema(property, name);
   if (node.items) walkSchema(node.items);
   for (const keyword of ["oneOf", "allOf", "anyOf"]) if (node[keyword]) node[keyword].forEach((child) => walkSchema(child));
@@ -1263,7 +1296,7 @@ for (const [path, item] of Object.entries(spec.paths)) {
   }
 }
 
-const yaml = YAML.stringify(spec, { indent: 2, lineWidth: 0 });
+const yaml = YAML.stringify(spec, { indent: 2, lineWidth: 0, aliasDuplicateObjects: false });
 await writeFile(new URL("lingya-agents-v1.yaml", contractDir), yaml, "utf8");
 await writeFile(new URL("lingya-agents-v1.json", contractDir), `${JSON.stringify(spec, null, 2)}\n`, "utf8");
 const schemaName = (schema) => schema?.$ref?.split("/").at(-1) ?? null;
@@ -1327,3 +1360,5 @@ for (const item of vectors.cases) {
   item.signature = signCanonicalRequest(item.secret, item.canonical);
 }
 await writeFile(vectorsUrl, `${JSON.stringify(vectors, null, 2)}\n`, "utf8");
+
+await writeFile(new URL('transports.json', contractDir), JSON.stringify(spec['x-lingya-websocket'], null, 2) + '\n', 'utf8');

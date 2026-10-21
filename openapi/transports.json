@@ -1,0 +1,56 @@
+{
+  "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/stream/ws",
+  "method": "GET",
+  "query": {
+    "messageId": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "authentication": {
+    "tokenSubprotocolPrefix": "xlt-openapi-token.",
+    "hmac": "request-headers"
+  },
+  "frames": {
+    "ready": {
+      "required": [
+        "id",
+        "event"
+      ],
+      "event": "ready"
+    },
+    "business": {
+      "required": [
+        "id",
+        "event",
+        "data"
+      ],
+      "dataSchema": "AiChatBriefEvent"
+    },
+    "complete": {
+      "required": [
+        "id",
+        "event"
+      ],
+      "event": "complete"
+    },
+    "transportError": {
+      "required": [
+        "id",
+        "event",
+        "data"
+      ],
+      "event": "transport-error",
+      "data": {
+        "code": "string",
+        "message": "string"
+      }
+    }
+  },
+  "completion": {
+    "endEvent": "end",
+    "closeOnEnd": true,
+    "completeFrame": "complete",
+    "normalCloseCode": 1000
+  }
+}

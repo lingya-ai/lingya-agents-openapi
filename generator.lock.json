@@ -1,0 +1,10 @@
+{
+  "openapiGenerator": {
+    "version": "7.25.0",
+    "sha256": "41ce4f6b07f196676439d710759fa1ced7a08066d06ff1bf314681470289efae",
+    "url": "https://repo.maven.apache.org/maven2/org/openapitools/openapi-generator-cli/7.25.0/openapi-generator-cli-7.25.0.jar"
+  },
+  "runtimeVersion": "0.7.0",
+  "ruff": "0.16.7",
+  "rustfmtToolchain": "1.98.1"
+}

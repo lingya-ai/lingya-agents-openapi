@@ -183,6 +183,47 @@
     "sse": false
   },
   {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}",
+    "relativePath": "/conversations/{conversationId}",
+    "operationId": "getConversationSummary",
+    "group": "conversations",
+    "summary": "读取会话摘要 / Get conversation summary",
+    "description": "### 使用场景\n按会话标识恢复当前用户的会话摘要。\n\n### Use case\nRestore the current user's conversation summary by ID.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n按会话标识恢复当前用户的会话摘要。\n\n### Behavior and side effects\nRestore the current user's conversation summary by ID.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n读取会话摘要 / Get conversation summary\n\n### Operation summary\n读取会话摘要 / Get conversation summary",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationSummary",
+      "format": null
+    },
+    "sse": false
+  },
+  {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/stream",
     "relativePath": "/conversations/{conversationId}/stream",
@@ -435,7 +476,8 @@
         "schema": {
           "type": "integer",
           "format": "int32",
-          "minimum": 0
+          "minimum": 0,
+          "default": 0
         },
         "boundFrom": null
       },
@@ -447,63 +489,9 @@
         "schema": {
           "type": "integer",
           "format": "int32",
-          "minimum": 0,
-          "maximum": 1000,
+          "minimum": 1,
+          "maximum": 100,
           "default": 30
-        },
-        "boundFrom": null
-      },
-      {
-        "name": "orderBy",
-        "in": "query",
-        "required": false,
-        "description": "排序字段列表。 / Ordered list of sort fields.",
-        "schema": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "boundFrom": null
-      },
-      {
-        "name": "orderDirection",
-        "in": "query",
-        "required": false,
-        "description": "排序方向。 / Sort direction.",
-        "schema": {
-          "type": "string",
-          "enum": [
-            "ASC",
-            "DESC"
-          ],
-          "default": "ASC"
-        },
-        "boundFrom": null
-      },
-      {
-        "name": "orderNullHandling",
-        "in": "query",
-        "required": false,
-        "description": "空值排序策略。 / Null ordering strategy.",
-        "schema": {
-          "type": "string",
-          "enum": [
-            "NATIVE",
-            "NULLS_FIRST",
-            "NULLS_LAST"
-          ],
-          "default": "NATIVE"
-        },
-        "boundFrom": null
-      },
-      {
-        "name": "keyword",
-        "in": "query",
-        "required": false,
-        "description": "标题或正文检索关键字。 / Title or content search keyword.",
-        "schema": {
-          "type": "string"
         },
         "boundFrom": null
       },
@@ -513,7 +501,51 @@
         "required": false,
         "description": "状态过滤条件。 / Status filter.",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "ARCHIVED",
+            "ALL"
+          ],
+          "default": "ACTIVE"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "keyword",
+        "in": "query",
+        "required": false,
+        "description": "标题或正文检索关键字。 / Title or content search keyword.",
+        "schema": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "groupFilter",
+        "in": "query",
+        "required": false,
+        "description": "字段 groupFilter / group filter field。",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ALL",
+            "UNGROUPED",
+            "GROUP"
+          ],
+          "default": "ALL"
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "groupId",
+        "in": "query",
+        "required": false,
+        "description": "groupFilter 为 GROUP 时必填。 / Required when groupFilter is GROUP.",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
         },
         "boundFrom": null
       }
@@ -736,7 +768,7 @@
     "operationId": "updateConversationTitle",
     "group": "conversations",
     "summary": "更新会话标题 / Update conversation title",
-    "description": "### 使用场景\n保存用户编辑的会话标题。\n\n### Use case\nSave a user-edited conversation title.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n异步更新标题。\n\n### Behavior and side effects\nUpdates the title asynchronously.\n\n### 后续调用\n重新读取标题或刷新列表。\n\n### Next step\nRead the title again or refresh the list.\n\n### 接口摘要\n更新会话标题 / Update conversation title\n\n### Operation summary\n更新会话标题 / Update conversation title",
+    "description": "### 使用场景\n保存用户编辑的会话标题。\n\n### Use case\nSave a user-edited conversation title.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n同步更新标题并返回权威会话元数据。\n\n### Behavior and side effects\nUpdate the title and return authoritative conversation metadata.\n\n### 后续调用\n重新读取标题或刷新列表。\n\n### Next step\nRead the title again or refresh the list.\n\n### 接口摘要\n更新会话标题 / Update conversation title\n\n### Operation summary\n更新会话标题 / Update conversation title",
     "parameters": [
       {
         "name": "channelId",
@@ -763,9 +795,9 @@
     ],
     "requestBodySchema": "ConversationTitleInput",
     "response": {
-      "status": "202",
-      "mediaType": null,
-      "schema": null,
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationMetadata",
       "format": null
     },
     "sse": false
@@ -1928,140 +1960,6 @@
     "sse": false
   },
   {
-    "method": "GET",
-    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares",
-    "relativePath": "/conversations/{conversationId}/shares",
-    "operationId": "listConversationShares",
-    "group": "conversations",
-    "summary": "查询会话分享 / List conversation shares",
-    "description": "### 使用场景\n查看会话当前创建的分享记录。\n\n### Use case\nInspect the conversation's current share records.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n只读。\n\n### Behavior and side effects\nRead-only.\n\n### 后续调用\n按需创建新分享或撤销旧分享。\n\n### Next step\nCreate a new share or revoke an existing one as needed.\n\n### 接口摘要\n查询会话分享 / List conversation shares\n\n### Operation summary\n查询会话分享 / List conversation shares",
-    "parameters": [
-      {
-        "name": "channelId",
-        "in": "path",
-        "required": true,
-        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
-        "schema": {
-          "type": "string",
-          "minLength": 1
-        },
-        "boundFrom": "channelId"
-      },
-      {
-        "name": "conversationId",
-        "in": "path",
-        "required": true,
-        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
-        "schema": {
-          "type": "string",
-          "minLength": 1
-        },
-        "boundFrom": null
-      }
-    ],
-    "requestBodySchema": null,
-    "response": {
-      "status": "200",
-      "mediaType": "application/json",
-      "schema": "ConversationShareList",
-      "format": null
-    },
-    "sse": false
-  },
-  {
-    "method": "POST",
-    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares",
-    "relativePath": "/conversations/{conversationId}/shares",
-    "operationId": "createConversationShare",
-    "group": "conversations",
-    "summary": "创建会话分享 / Create a conversation share",
-    "description": "### 使用场景\n为会话创建受控的外部分享。\n\n### Use case\nCreate controlled external sharing for a conversation.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n创建新的分享记录和分享码。\n\n### Behavior and side effects\nCreates a share record and share code.\n\n### 后续调用\n安全地交付分享信息，并定期检查有效期。\n\n### Next step\nDeliver share information securely and monitor its expiry.\n\n### 接口摘要\n创建会话分享 / Create a conversation share\n\n### Operation summary\n创建会话分享 / Create a conversation share",
-    "parameters": [
-      {
-        "name": "channelId",
-        "in": "path",
-        "required": true,
-        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
-        "schema": {
-          "type": "string",
-          "minLength": 1
-        },
-        "boundFrom": "channelId"
-      },
-      {
-        "name": "conversationId",
-        "in": "path",
-        "required": true,
-        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
-        "schema": {
-          "type": "string",
-          "minLength": 1
-        },
-        "boundFrom": null
-      }
-    ],
-    "requestBodySchema": "ConversationShareInput",
-    "response": {
-      "status": "201",
-      "mediaType": "application/json",
-      "schema": "ConversationShareCreated",
-      "format": null
-    },
-    "sse": false
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/shares/{shareId}",
-    "relativePath": "/conversations/{conversationId}/shares/{shareId}",
-    "operationId": "revokeConversationShare",
-    "group": "conversations",
-    "summary": "撤销会话分享 / Revoke a conversation share",
-    "description": "### 使用场景\n使不再需要的分享立即失效。\n\n### Use case\nInvalidate a share that is no longer needed.\n\n### 前置条件\n渠道凭证和外部用户已配置，目标资源属于当前用户。\n\n### Prerequisites\nChannel credentials and the external user are configured, and the target resource belongs to that user.\n\n### 行为与副作用\n撤销指定分享，不删除原会话。\n\n### Behavior and side effects\nRevokes the selected share without deleting the conversation.\n\n### 后续调用\n刷新分享列表并停止分发旧链接。\n\n### Next step\nRefresh the share list and stop distributing the old link.\n\n### 接口摘要\n撤销会话分享 / Revoke a conversation share\n\n### Operation summary\n撤销会话分享 / Revoke a conversation share",
-    "parameters": [
-      {
-        "name": "channelId",
-        "in": "path",
-        "required": true,
-        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
-        "schema": {
-          "type": "string",
-          "minLength": 1
-        },
-        "boundFrom": "channelId"
-      },
-      {
-        "name": "conversationId",
-        "in": "path",
-        "required": true,
-        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
-        "schema": {
-          "type": "string",
-          "minLength": 1
-        },
-        "boundFrom": null
-      },
-      {
-        "name": "shareId",
-        "in": "path",
-        "required": true,
-        "description": "会话分享记录 ID。 / Conversation-share record ID.",
-        "schema": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "boundFrom": null
-      }
-    ],
-    "requestBodySchema": null,
-    "response": {
-      "status": "200",
-      "mediaType": "application/json",
-      "schema": "ConversationShareRevoked",
-      "format": null
-    },
-    "sse": false
-  },
-  {
     "method": "POST",
     "path": "/api/agents/channel/openapi/v1/{channelId}/chat/plan/approve",
     "relativePath": "/plan/approve",
@@ -2728,6 +2626,608 @@
       "status": "200",
       "mediaType": "application/json",
       "schema": "PreSignedReadUrl",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/presign",
+    "relativePath": "/presign",
+    "operationId": "createOpenApiToken",
+    "group": "configuration",
+    "summary": "签发一次性短期渠道令牌 / Create a single-use short-lived channel token",
+    "description": "### 使用场景\n仅接受 AK/SK 签名且请求体必须为空；返回 token 和 expiresAt。十分钟内有效的一次性渠道令牌，绑定签发时的渠道和用户身份。截止 expiresAt 前仅能认证一个新请求；认证成功即消费，业务失败不退还。每次新请求、重试或 SSE/WebSocket 重连都必须重新签发，不得缓存复用。使用 X-OpenAPI-Token，与所有 HMAC 鉴权头互斥，不能用于 presign。\n\n### Use case\nRequires AK/SK signing with an empty request body; returns token and expiresAt. A single-use channel token valid for ten minutes, bound to the issuing channel and user. It authenticates only one new request before expiresAt and is consumed on successful authentication even if the business operation fails. Obtain a fresh token for every new request, retry, or SSE/WebSocket reconnection; never cache or reuse it. Send X-OpenAPI-Token without any HMAC authentication headers; tokens cannot call presign.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n仅接受 AK/SK 签名且请求体必须为空；返回 token 和 expiresAt。十分钟内有效的一次性渠道令牌，绑定签发时的渠道和用户身份。截止 expiresAt 前仅能认证一个新请求；认证成功即消费，业务失败不退还。每次新请求、重试或 SSE/WebSocket 重连都必须重新签发，不得缓存复用。使用 X-OpenAPI-Token，与所有 HMAC 鉴权头互斥，不能用于 presign。\n\n### Behavior and side effects\nRequires AK/SK signing with an empty request body; returns token and expiresAt. A single-use channel token valid for ten minutes, bound to the issuing channel and user. It authenticates only one new request before expiresAt and is consumed on successful authentication even if the business operation fails. Obtain a fresh token for every new request, retry, or SSE/WebSocket reconnection; never cache or reuse it. Send X-OpenAPI-Token without any HMAC authentication headers; tokens cannot call presign.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n签发一次性短期渠道令牌 / Create a single-use short-lived channel token\n\n### Operation summary\n签发一次性短期渠道令牌 / Create a single-use short-lived channel token",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "OpenApiToken",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversation-groups",
+    "relativePath": "/conversation-groups",
+    "operationId": "listConversationGroups",
+    "group": "conversations",
+    "summary": "查询会话分组 / List conversation groups",
+    "description": "### 使用场景\n一次读取当前用户作用域下的完整分组目录。\n\n### Use case\nRead the complete group directory for the current user.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n一次读取当前用户作用域下的完整分组目录。\n\n### Behavior and side effects\nRead the complete group directory for the current user.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n查询会话分组 / List conversation groups\n\n### Operation summary\n查询会话分组 / List conversation groups",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationGroupList",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversation-groups",
+    "relativePath": "/conversation-groups",
+    "operationId": "createConversationGroup",
+    "group": "conversations",
+    "summary": "创建会话分组 / Create conversation group",
+    "description": "### 使用场景\n去除名称首尾空白后创建分组，名称最多 60 字符。\n\n### Use case\nCreate a group after trimming the name; names are limited to 60 characters.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n去除名称首尾空白后创建分组，名称最多 60 字符。\n\n### Behavior and side effects\nCreate a group after trimming the name; names are limited to 60 characters.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n创建会话分组 / Create conversation group\n\n### Operation summary\n创建会话分组 / Create conversation group",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      }
+    ],
+    "requestBodySchema": "ConversationGroupNameInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "ConversationGroup",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversation-groups/{groupId}",
+    "relativePath": "/conversation-groups/{groupId}",
+    "operationId": "renameConversationGroup",
+    "group": "conversations",
+    "summary": "重命名会话分组 / Rename conversation group",
+    "description": "### 使用场景\n更新当前用户的分组名称。\n\n### Use case\nUpdate the name of a group owned by the current user.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n更新当前用户的分组名称。\n\n### Behavior and side effects\nUpdate the name of a group owned by the current user.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n重命名会话分组 / Rename conversation group\n\n### Operation summary\n重命名会话分组 / Rename conversation group",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "groupId",
+        "in": "path",
+        "required": true,
+        "description": "字段 groupId / group id field。",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "ConversationGroupNameInput",
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationGroup",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversation-groups/{groupId}",
+    "relativePath": "/conversation-groups/{groupId}",
+    "operationId": "deleteConversationGroup",
+    "group": "conversations",
+    "summary": "删除会话分组 / Delete conversation group",
+    "description": "### 使用场景\n删除分组并将会话移回未分组，返回移动数量。\n\n### Use case\nDelete the group and move its conversations to ungrouped; return the moved count.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n删除分组并将会话移回未分组，返回移动数量。\n\n### Behavior and side effects\nDelete the group and move its conversations to ungrouped; return the moved count.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n删除会话分组 / Delete conversation group\n\n### Operation summary\n删除会话分组 / Delete conversation group",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "groupId",
+        "in": "path",
+        "required": true,
+        "description": "字段 groupId / group id field。",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationGroupDeleted",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/group",
+    "relativePath": "/conversations/{conversationId}/group",
+    "operationId": "moveConversationToGroup",
+    "group": "conversations",
+    "summary": "移动会话分组 / Move conversation to group",
+    "description": "### 使用场景\n必须显式提供 groupId；null 表示移回未分组。\n\n### Use case\nSupply groupId explicitly; null moves the conversation to ungrouped.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n必须显式提供 groupId；null 表示移回未分组。\n\n### Behavior and side effects\nSupply groupId explicitly; null moves the conversation to ungrouped.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n移动会话分组 / Move conversation to group\n\n### Operation summary\n移动会话分组 / Move conversation to group",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "UpdateConversationGroupInput",
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationMetadata",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/sync",
+    "relativePath": "/conversations/{conversationId}/messages/sync",
+    "operationId": "syncConversationMessages",
+    "group": "messages",
+    "summary": "增量同步消息 / Sync conversation messages",
+    "description": "### 使用场景\n按公开消息游标读取新增消息；无新增时保留原游标。\n\n### Use case\nRead new public messages after a cursor; retain the cursor if no new messages exist.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n按公开消息游标读取新增消息；无新增时保留原游标。\n\n### Behavior and side effects\nRead new public messages after a cursor; retain the cursor if no new messages exist.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n增量同步消息 / Sync conversation messages\n\n### Operation summary\n增量同步消息 / Sync conversation messages",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "afterMessageId",
+        "in": "query",
+        "required": false,
+        "description": "通知消息同步游标。 / Notification-message sync cursor.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 50
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "ConversationMessageSync",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/messages/{messageId}/plan/status",
+    "relativePath": "/conversations/{conversationId}/messages/{messageId}/plan/status",
+    "operationId": "getMessagePlanStatus",
+    "group": "interactions",
+    "summary": "查询消息计划审批状态 / Get message plan status",
+    "description": "### 使用场景\n使用 conversationId 和 messageId 检查计划审批是否仍在等待。\n\n### Use case\nCheck whether plan approval is pending using conversationId and messageId.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n使用 conversationId 和 messageId 检查计划审批是否仍在等待。\n\n### Behavior and side effects\nCheck whether plan approval is pending using conversationId and messageId.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n查询消息计划审批状态 / Get message plan status\n\n### Operation summary\n查询消息计划审批状态 / Get message plan status",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "description": "用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "PlanStatus",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal",
+    "relativePath": "/conversations/{conversationId}/goal",
+    "operationId": "getGoal",
+    "group": "chat",
+    "summary": "读取当前目标 / Get current goal",
+    "description": "### 使用场景\n无当前目标时返回 goal=null。\n\n### Use case\nReturn goal=null when no current goal exists.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n无当前目标时返回 goal=null。\n\n### Behavior and side effects\nReturn goal=null when no current goal exists.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n读取当前目标 / Get current goal\n\n### Operation summary\n读取当前目标 / Get current goal",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AgentGoalView",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal",
+    "relativePath": "/conversations/{conversationId}/goal",
+    "operationId": "editGoal",
+    "group": "chat",
+    "summary": "编辑目标 / Edit goal",
+    "description": "### 使用场景\n携带 goalId 和 goalRevision 更新目标正文，不改变激活状态；陈旧版本返回 409，失效目标返回 410。\n\n### Use case\nUpdate the objective with goalId and goalRevision without changing activation; stale revisions return 409 and invalidated goals return 410.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n携带 goalId 和 goalRevision 更新目标正文，不改变激活状态；陈旧版本返回 409，失效目标返回 410。\n\n### Behavior and side effects\nUpdate the objective with goalId and goalRevision without changing activation; stale revisions return 409 and invalidated goals return 410.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n编辑目标 / Edit goal\n\n### Operation summary\n编辑目标 / Edit goal",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "EditAgentGoalInput",
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AgentGoal",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "GET",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/history",
+    "relativePath": "/conversations/{conversationId}/goal/history",
+    "operationId": "getGoalHistory",
+    "group": "chat",
+    "summary": "查询目标历史 / Get goal history",
+    "description": "### 使用场景\n分页读取当前会话的目标历史。\n\n### Use case\nRead paged goal history for the conversation.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n分页读取当前会话的目标历史。\n\n### Behavior and side effects\nRead paged goal history for the conversation.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n查询目标历史 / Get goal history\n\n### Operation summary\n查询目标历史 / Get goal history",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "分页信息 / page metadata。",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 0
+        },
+        "boundFrom": null
+      },
+      {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "单页记录数。 / Number of records per page.",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 20
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": null,
+    "response": {
+      "status": "200",
+      "mediaType": "application/json",
+      "schema": "AgentGoalHistory",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/pause",
+    "relativePath": "/conversations/{conversationId}/goal/pause",
+    "operationId": "pauseGoal",
+    "group": "chat",
+    "summary": "暂停目标 / Pause goal",
+    "description": "### 使用场景\n携带目标标识与版本，暂停并撤销自动续跑授权。\n\n### Use case\nPause the identified goal at the expected revision and revoke automatic continuation.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n携带目标标识与版本，暂停并撤销自动续跑授权。\n\n### Behavior and side effects\nPause the identified goal at the expected revision and revoke automatic continuation.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n暂停目标 / Pause goal\n\n### Operation summary\n暂停目标 / Pause goal",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "AgentGoalRefInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AgentGoal",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/resume",
+    "relativePath": "/conversations/{conversationId}/goal/resume",
+    "operationId": "resumeGoal",
+    "group": "chat",
+    "summary": "恢复目标 / Resume goal",
+    "description": "### 使用场景\n携带目标标识与版本，恢复目标并重新授予自动续跑授权。\n\n### Use case\nResume the identified goal at the expected revision and authorize automatic continuation.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n携带目标标识与版本，恢复目标并重新授予自动续跑授权。\n\n### Behavior and side effects\nResume the identified goal at the expected revision and authorize automatic continuation.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n恢复目标 / Resume goal\n\n### Operation summary\n恢复目标 / Resume goal",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "AgentGoalRefInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AgentGoal",
+      "format": null
+    },
+    "sse": false
+  },
+  {
+    "method": "POST",
+    "path": "/api/agents/channel/openapi/v1/{channelId}/chat/conversations/{conversationId}/goal/clear",
+    "relativePath": "/conversations/{conversationId}/goal/clear",
+    "operationId": "clearGoal",
+    "group": "chat",
+    "summary": "清除目标 / Clear goal",
+    "description": "### 使用场景\n携带目标标识与版本，清除目标并保留墓碑。\n\n### Use case\nClear the identified goal at the expected revision and preserve its tombstone.\n\n### 前置条件\n有效渠道身份；会话资源必须属于当前用户。\n\n### Prerequisites\nValid channel identity; conversation resources must belong to the current user.\n\n### 行为与副作用\n携带目标标识与版本，清除目标并保留墓碑。\n\n### Behavior and side effects\nClear the identified goal at the expected revision and preserve its tombstone.\n\n### 后续调用\n根据返回的权威状态更新客户端。\n\n### Next step\nUpdate the client using the returned authoritative state.\n\n### 接口摘要\n清除目标 / Clear goal\n\n### Operation summary\n清除目标 / Clear goal",
+    "parameters": [
+      {
+        "name": "channelId",
+        "in": "path",
+        "required": true,
+        "description": "Agent OpenAPI 渠道 UUID。 / Agent OpenAPI channel UUID.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": "channelId"
+      },
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "description": "会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.",
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundFrom": null
+      }
+    ],
+    "requestBodySchema": "AgentGoalRefInput",
+    "response": {
+      "status": "201",
+      "mediaType": "application/json",
+      "schema": "AgentGoal",
       "format": null
     },
     "sse": false

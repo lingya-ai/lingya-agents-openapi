@@ -1,13 +1,16 @@
 {
   "name": "@lingya/agents-openapi-contract",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "private": true,
   "description": "Canonical OpenAPI contract for the Lingya Agents public API",
   "type": "module",
   "scripts": {
     "build": "node scripts/build-contract.mjs",
+    "sync:sdks": "npm run generate:sdks",
     "check": "npm run build && npm run generate:docs && node scripts/check-contract.mjs",
-    "generate:docs": "node scripts/build-docs.mjs"
+    "generate:docs": "node scripts/build-docs.mjs",
+    "generate:sdks": "npm run build && node scripts/generate-sdks.mjs",
+    "check:sdks": "node scripts/generate-sdks.mjs --check"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.41.0",

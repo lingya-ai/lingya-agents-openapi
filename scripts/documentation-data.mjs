@@ -15,8 +15,8 @@ export const groupGuides = {
     en: "Use this group to create or continue conversations, consume live SSE events, probe streaming connectivity, interrupt execution, and compact context. A typical flow reads configuration, uploads files if needed, submits a message, and then subscribes to SSE. Interrupt or compact only when execution or context state requires it. Do not treat an SSE disconnect as proof that server-side execution ended.",
   },
   Conversations: {
-    zh: "用于管理会话生命周期和聚合状态，包括列表、活动/未读状态、已读游标、统计、标题、业务状态、分享和删除。列表适合工作台展示，活动查询适合轮询补偿，分享接口只应在明确需要对外共享时使用。删除和撤销分享会改变持久状态。",
-    en: "Use this group to manage conversation lifecycle and aggregate state, including lists, active or unread state, read cursors, statistics, titles, business status, sharing, and deletion. Lists support workspace views, activity queries support polling recovery, and sharing should be used only for deliberate external access. Deletion and share revocation mutate persistent state.",
+    zh: "用于管理会话生命周期和聚合状态，包括列表、活动/未读状态、已读游标、统计、标题、业务状态、分组和删除。列表适合工作台展示，活动查询适合轮询补偿。分组和删除会改变持久状态。",
+    en: "Use this group to manage conversation lifecycle and aggregate state, including lists, active or unread state, read cursors, statistics, titles, business status, grouping, and deletion. Lists support workspace views, activity queries support polling recovery. Grouping and deletion mutate persistent state.",
   },
   Messages: {
     zh: "用于读取会话消息、异步任务和排队状态，以及取消尚未执行的排队消息。消息详情适合审计与结果恢复，异步任务接口用于跟踪长任务。取消接口只对仍在队列中的消息有效，不能代替执行中的中断接口。",

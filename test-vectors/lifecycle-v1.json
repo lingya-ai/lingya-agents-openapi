@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "httpErrors": [
+    {
+      "status": 401,
+      "body": {
+        "code": "UNAUTHORIZED",
+        "message": "fixture failure",
+        "fields": [
+          {
+            "field": "title",
+            "message": "required"
+          }
+        ]
+      },
+      "requestId": "server-401"
+    },
+    {
+      "status": 409,
+      "body": {
+        "code": "GOAL_CONFLICT",
+        "message": "fixture failure",
+        "fields": [
+          {
+            "field": "title",
+            "message": "required"
+          }
+        ]
+      },
+      "requestId": "server-409"
+    },
+    {
+      "status": 410,
+      "body": {
+        "code": "GOAL_GONE",
+        "message": "fixture failure",
+        "fields": [
+          {
+            "field": "title",
+            "message": "required"
+          }
+        ]
+      },
+      "requestId": "server-410"
+    }
+  ],
+  "sse": {
+    "complete": "data: {\"type\":\"future\",\"text\":\"中\"}\r\n\r\n",
+    "incomplete": "data: {\"type\":\"future\"}",
+    "heartbeats": ":ready\r\n:ping\r\n\r\n"
+  },
+  "websocket": {
+    "ready": {
+      "id": "m",
+      "event": "ready"
+    },
+    "unknown": {
+      "id": "m",
+      "event": "future",
+      "data": {
+        "type": "future",
+        "kept": true
+      }
+    },
+    "complete": {
+      "id": "m",
+      "event": "complete"
+    },
+    "transportError": {
+      "id": "m",
+      "event": "transport-error",
+      "data": {
+        "code": "STREAM_FAILED",
+        "message": "fixture failure"
+      }
+    }
+  }
+}
