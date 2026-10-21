@@ -10,6 +10,8 @@
 
 ## Unreleased
 
+- Preserve Python 3.10 async timeout classification in the canonical SDK runtime.
+
 - Add a left-navigation signing guide for clients that call the API with raw HTTP.
 
 ## 0.1.5 - 2026-09-27

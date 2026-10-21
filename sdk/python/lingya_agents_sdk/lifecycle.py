@@ -136,7 +136,7 @@ async def await_operation(operation: Awaitable[T], options: RequestOptions, dead
                 raise ApiError("", "", kind="cancelled")
             remaining = None if expires is None else max(0, expires - asyncio.get_running_loop().time())
             if remaining == 0:
-                raise TimeoutError
+                raise asyncio.TimeoutError
             tick = min(remaining, 0.01) if remaining is not None else 0.01
             done, _ = await asyncio.wait({task}, timeout=remaining if options.cancel_event is None else tick)
             if done:
