@@ -1,6 +1,6 @@
 {
   "name": "@lingya/agents-openapi-contract",
-  "version": "0.1.7",
+  "version": "1.0.0",
   "private": true,
   "description": "Canonical OpenAPI contract for the Lingya Agents public API",
   "type": "module",

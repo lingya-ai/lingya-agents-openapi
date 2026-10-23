@@ -18,7 +18,7 @@ const operations = Object.entries(yaml.paths).flatMap(([path, item]) =>
     .map(([method, operation]) => ({ path, method, operation })),
 );
 
-if (yaml.info.version !== "0.1.7") throw new Error(`Expected contract version 0.1.7, found ${yaml.info.version}`);
+if (yaml.info.version !== "1.0.0") throw new Error(`Expected contract version 1.0.0, found ${yaml.info.version}`);
 if (operations.length !== 64) throw new Error(`Expected 64 operations, found ${operations.length}`);
 if (yaml.tags.length !== 10) throw new Error(`Expected 10 business groups, found ${yaml.tags.length}`);
 const ids = operations.map(({ operation }) => operation.operationId);
@@ -102,10 +102,12 @@ for (const entry of manifest) {
 }
 if (JSON.stringify(yaml) !== JSON.stringify(json)) throw new Error("YAML and JSON contract artifacts differ");
 
+// A typed map (additionalProperties value schema) is closed over key names but still strongly typed.
+const isTypedMap = (node) => node.type === "object" && typeof node.additionalProperties === "object" && node.additionalProperties !== null;
 const inspectSchema = (node, location) => {
   if (!node || typeof node !== "object" || Array.isArray(node)) return;
-  if (location !== "ConversationUserMessage.metadata" && node.additionalProperties !== undefined && node.additionalProperties !== false) throw new Error(`Free-form object is forbidden: ${location}`);
-  if (location !== "ConversationUserMessage.metadata" && node.type === "object" && !node.properties && !node.$ref && !node.oneOf && !node.allOf) throw new Error(`Object without explicit properties is forbidden: ${location}`);
+  if (location !== "ConversationUserMessage.metadata" && node.additionalProperties !== undefined && node.additionalProperties !== false && !isTypedMap(node)) throw new Error(`Free-form object is forbidden: ${location}`);
+  if (location !== "ConversationUserMessage.metadata" && node.type === "object" && !node.properties && !node.$ref && !node.oneOf && !node.allOf && !isTypedMap(node)) throw new Error(`Object without explicit properties is forbidden: ${location}`);
   if (node.properties) {
     for (const [name, property] of Object.entries(node.properties)) {
       if (!property.description?.includes(" / ")) throw new Error(`Missing bilingual property documentation: ${location}.${name}`);

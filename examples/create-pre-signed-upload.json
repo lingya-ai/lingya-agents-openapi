@@ -6,7 +6,8 @@
     "body": {
       "fileName": "quarterly-report.pdf",
       "module": "ai-chat-attachments",
-      "contentMd5": "1B2M2Y8AsgTpgAmY7PhCfg=="
+      "contentMd5": "1B2M2Y8AsgTpgAmY7PhCfg==",
+      "sizeBytes": 248832
     }
   },
   "response": {
@@ -14,7 +15,13 @@
     "body": {
       "support": true,
       "url": "https://objects.example.com/uploads/quarterly-report.pdf",
-      "fileUk": "temporary-file-key"
+      "fileUk": "temporary-file-key",
+      "uploadMethod": "POST_FORM",
+      "formFields": {
+        "key": "uploads/2026/10/quarterly-report.pdf",
+        "policy": "example-policy"
+      },
+      "maximumBytes": 262144
     }
   }
 }

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Lingya Agents OpenAPI
-  version: 0.1.7
+  version: 1.0.0
   description: |-
     本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，支持 OPENAPI-HMAC-SHA256-V1 签名或短期渠道令牌验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。
 
@@ -437,7 +437,6 @@ paths:
                 presencePenalty: -2
               files:
                 - id: 1
-                  fileName: quarterly-report.pdf
               planMode: false
               goalMode: false
         description: 创建会话并提交消息 / Create a conversation and submit a message 的 JSON 请求参数。 / JSON request parameters for createChat.
@@ -503,8 +502,7 @@ paths:
               },
               "files": [
                 {
-                  "id": 1,
-                  "fileName": "quarterly-report.pdf"
+                  "id": 1
                 }
               ],
               "planMode": false,
@@ -538,8 +536,7 @@ paths:
               },
               "files": [
                 {
-                  "id": 1,
-                  "fileName": "quarterly-report.pdf"
+                  "id": 1
                 }
               ],
               "planMode": false,
@@ -630,7 +627,6 @@ paths:
                 presencePenalty: -2
               files:
                 - id: 1
-                  fileName: quarterly-report.pdf
               planMode: false
               goalMode: false
         description: 向已有会话提交消息 / Submit a message to an existing conversation 的 JSON 请求参数。 / JSON request parameters for continueChat.
@@ -696,8 +692,7 @@ paths:
               },
               "files": [
                 {
-                  "id": 1,
-                  "fileName": "quarterly-report.pdf"
+                  "id": 1
                 }
               ],
               "planMode": false,
@@ -731,8 +726,7 @@ paths:
               },
               "files": [
                 {
-                  "id": 1,
-                  "fileName": "quarterly-report.pdf"
+                  "id": 1
                 }
               ],
               "planMode": false,
@@ -1022,6 +1016,7 @@ paths:
                     fileSize: 0
                     fileName: quarterly-report.pdf
                     mimeType: application/pdf
+                executionType: USER_MESSAGE
               x-sse-example: test-vectors/sse-v1.txt
         "401":
           $ref: "#/components/responses/Error"
@@ -4070,7 +4065,6 @@ paths:
                     subagentType: example
                     status: COMPLETED
                     phase: example
-                    progressPercent: 0
                     parentConversationId: example
                     parentMessageId: example
                     childConversationId: example
@@ -4216,7 +4210,6 @@ paths:
                     subagentType: example
                     status: COMPLETED
                     phase: example
-                    progressPercent: 0
                     parentConversationId: example
                     parentMessageId: example
                     childConversationId: example
@@ -4237,7 +4230,6 @@ paths:
                     subagentType: example
                     status: COMPLETED
                     phase: example
-                    progressPercent: 0
                     parentConversationId: example
                     parentMessageId: example
                     childConversationId: example
@@ -4371,7 +4363,6 @@ paths:
                 subagentType: example
                 status: COMPLETED
                 phase: example
-                progressPercent: 0
                 parentConversationId: example
                 parentMessageId: example
                 childConversationId: example
@@ -4501,7 +4492,6 @@ paths:
                 subagentType: example
                 status: COMPLETED
                 phase: example
-                progressPercent: 0
                 parentConversationId: example
                 parentMessageId: example
                 childConversationId: example
@@ -4633,7 +4623,6 @@ paths:
                   subagentType: example
                   status: COMPLETED
                   phase: example
-                  progressPercent: 0
                   parentConversationId: example
                   parentMessageId: example
                   childConversationId: example
@@ -4668,6 +4657,7 @@ paths:
                     description: Example generated artifact
                     lastUpdateTime: 2026-01-15T08:00:00Z
                     previewUrl: https://objects.example.com/preview/example
+                    htmlPageAuthoringMode: SOURCE
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -4936,6 +4926,7 @@ paths:
                         fileSize: 0
                         fileName: quarterly-report.pdf
                         mimeType: application/pdf
+                    executionType: USER_MESSAGE
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -5042,6 +5033,7 @@ paths:
                             fileSize: 0
                             fileName: quarterly-report.pdf
                             mimeType: application/pdf
+                        executionType: USER_MESSAGE
                 skipped:
                   - messageId: message-demo-001
                     reason: example
@@ -5665,6 +5657,9 @@ paths:
                 support: true
                 fileUk: temporary-file-key
                 url: https://objects.example.com/preview/example
+                uploadMethod: PUT
+                formFields: {}
+                maximumBytes: 262144
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -5690,6 +5685,7 @@ paths:
               module: ai-chat-attachments
               contentMd5: 1B2M2Y8AsgTpgAmY7PhCfg==
               fileId: 1001
+              sizeBytes: 248832
         description: 创建预签名上传地址 / Create a presigned upload URL 的 JSON 请求参数。 / JSON request parameters for createPreSignedUpload.
       description: |-
         ### 使用场景
@@ -5699,22 +5695,22 @@ paths:
         Request an object-storage URL for a new attachment.
 
         ### 前置条件
-        已计算文件 MD5，文件模块为 ai-chat-attachments。
+        已计算文件 MD5 并取得实际文件大小，文件模块为 ai-chat-attachments。
 
         ### Prerequisites
-        The file MD5 is known and the module is ai-chat-attachments.
+        The file MD5 and actual file size are known, and the module is ai-chat-attachments.
 
         ### 行为与副作用
-        创建短期上传授权，不代表上传完成。
+        创建短期上传授权并预占配额，不代表上传完成。
 
         ### Behavior and side effects
-        Creates short-lived upload authorization; upload is not yet complete.
+        Creates short-lived upload authorization and reserves quota; upload is not yet complete.
 
         ### 后续调用
-        按返回 headers 上传文件，再调用确认接口。
+        按返回的 uploadMethod 执行 PUT 或 POST_FORM 上传，遵守 maximumBytes，再调用确认接口。
 
         ### Next step
-        Upload with the returned headers, then call confirmation.
+        Upload with the returned uploadMethod (PUT or POST_FORM) within maximumBytes, then call confirmation.
 
         ### 接口摘要
         创建预签名上传地址 / Create a presigned upload URL
@@ -5738,7 +5734,8 @@ paths:
               "fileName": "quarterly-report.pdf",
               "module": "ai-chat-attachments",
               "contentMd5": "1B2M2Y8AsgTpgAmY7PhCfg==",
-              "fileId": 1001
+              "fileId": 1001,
+              "sizeBytes": 248832
             }
         - lang: Shell
           label: cURL + local HMAC
@@ -5753,7 +5750,8 @@ paths:
               "fileName": "quarterly-report.pdf",
               "module": "ai-chat-attachments",
               "contentMd5": "1B2M2Y8AsgTpgAmY7PhCfg==",
-              "fileId": 1001
+              "fileId": 1001,
+              "sizeBytes": 248832
             }
             JSON
             )
@@ -6404,7 +6402,7 @@ paths:
             schema:
               $ref: "#/components/schemas/ReturnedReferenceList"
             example:
-              - type: message
+              - citationType: KNOWLEDGE_BASE
                 referenceId: 1001
         description: 批量读取引用元数据 / Get citation metadata in batch 的 JSON 请求参数。 / JSON request parameters for getCitationMetadataBatch.
       description: |-
@@ -6452,7 +6450,7 @@ paths:
 
             [
               {
-                "type": "message",
+                "citationType": "KNOWLEDGE_BASE",
                 "referenceId": 1001
               }
             ]
@@ -6467,7 +6465,7 @@ paths:
             BODY=$(cat <<'JSON'
             [
               {
-                "type": "message",
+                "citationType": "KNOWLEDGE_BASE",
                 "referenceId": 1001
               }
             ]
@@ -6699,7 +6697,8 @@ paths:
               example:
                 fileArtifacts:
                   records:
-                    - relativePath: example
+                    - fileId: 1001
+                      relativePath: example
                       size: 0
                       fileName: quarterly-report.pdf
                       mimeType: application/pdf
@@ -6715,6 +6714,7 @@ paths:
                     description: Example generated artifact
                     lastUpdateTime: 2026-01-15T08:00:00Z
                     previewUrl: https://objects.example.com/preview/example
+                    htmlPageAuthoringMode: SOURCE
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -9023,11 +9023,6 @@ components:
           type: integer
           format: int64
           description: 字段 id / id field。
-        fileName:
-          oneOf:
-            - type: string
-            - type: "null"
-          description: 文件名 / file name。
       description: AiChatFileRef 的公开协议结构。 / Public contract for ai chat file ref.
     AiChatInput:
       type: object
@@ -9180,7 +9175,7 @@ components:
           description: 当前状态 / current status。
         messageCount:
           type: integer
-          format: int64
+          format: int32
           minimum: 0
           description: 字段 messageCount / message count field。
         totalTokens:
@@ -9869,6 +9864,23 @@ components:
         message:
           type: string
           description: 消息正文 / message text。
+        terminalReason:
+          oneOf:
+            - type: string
+              enum:
+                - COMPLETED
+                - EXECUTION_ERROR
+                - INTERRUPTED
+                - USER_INTERRUPTED
+                - SYSTEM_INTERRUPTED
+                - WORKSPACE_COMMIT_FAILED
+                - EXECUTION_LEASE_EXPIRED
+                - EXECUTION_DEADLINE_EXCEEDED
+                - TERMINAL_EVENT_RECONCILED
+                - TERMINAL_EVENT_MISSING_RECONCILED
+                - LEGACY_STATE_RECONCILED
+            - type: "null"
+          description: 字段 terminalReason / terminal reason field。
       description: AiChatErrorBriefEvent 的公开协议结构。 / Public contract for ai chat error brief event.
     AiChatUserQueryBriefEvent:
       type: object
@@ -9891,6 +9903,22 @@ components:
                 $ref: "#/components/schemas/MediaAttachment"
             - type: "null"
           description: 字段 attachments / attachments field。
+        executionType:
+          oneOf:
+            - type: string
+              enum:
+                - USER_MESSAGE
+                - ASYNC_TASK_NOTIFICATION
+                - SUBAGENT_ASYNC_EXECUTION
+                - SUBAGENT
+                - CONTEXT_COMPRESSION
+                - CONTEXT_INSPECTION
+                - COLLABORATION_TURN
+                - COLLABORATION_STEER
+                - COLLABORATION_NOTIFICATION
+                - GOAL_CONTINUATION
+            - type: "null"
+          description: 字段 executionType / execution type field。
       description: AiChatUserQueryBriefEvent 的公开协议结构。 / Public contract for ai chat user query brief event.
     AiChatToolExecutionBriefEvent:
       type: object
@@ -10274,6 +10302,13 @@ components:
               format: int64
             - type: "null"
           description: 文件 ID / file ID。
+        sizeBytes:
+          oneOf:
+            - type: integer
+              format: int64
+              minimum: 0
+            - type: "null"
+          description: 实际文件大小（字节） / actual file size in bytes。
       description: GeneratePreSignedUrlInput 的公开协议结构。 / Public contract for generate pre signed url input.
     GeneratePreSignedUrlOutput:
       type: object
@@ -10295,6 +10330,24 @@ components:
               format: uri
             - type: "null"
           description: 预签名 URL / presigned URL。
+        uploadMethod:
+          type: string
+          enum:
+            - PUT
+            - POST_FORM
+          description: 客户端上传方式 / upload method。
+        formFields:
+          type: object
+          additionalProperties:
+            type: string
+          description: 表单上传字段 / form fields。
+        maximumBytes:
+          oneOf:
+            - type: integer
+              format: int64
+              minimum: 0
+            - type: "null"
+          description: 受限上传允许的最大字节数 / maximum bytes for bounded upload。
       description: GeneratePreSignedUrlOutput 的公开协议结构。 / Public contract for generate pre signed url output.
     ConfirmUploadInput:
       type: object
@@ -10388,12 +10441,12 @@ components:
       type: object
       additionalProperties: false
       required:
-        - type
+        - citationType
         - referenceId
       properties:
-        type:
+        citationType:
           type: string
-          description: 类型判别值 / type discriminator。
+          description: 字段 citationType / citation type field。
         referenceId:
           type: integer
           format: int64
@@ -10725,14 +10778,6 @@ components:
             - type: string
             - type: "null"
           description: 字段 phase / phase field。
-        progressPercent:
-          oneOf:
-            - type: integer
-              format: int32
-              minimum: 0
-              maximum: 100
-            - type: "null"
-          description: 字段 progressPercent / progress percent field。
         parentConversationId:
           type: string
           description: 字段 parentConversationId / parent conversation id field。
@@ -10936,12 +10981,17 @@ components:
       type: object
       additionalProperties: false
       required:
+        - fileId
         - relativePath
         - size
         - fileName
         - mimeType
         - lastUpdateTime
       properties:
+        fileId:
+          type: integer
+          format: int64
+          description: 文件 ID / file ID。
         relativePath:
           type: string
           description: 字段 relativePath / relative path field。
@@ -10994,6 +11044,14 @@ components:
               format: uri
             - type: "null"
           description: 字段 previewUrl / preview url field。
+        htmlPageAuthoringMode:
+          oneOf:
+            - type: string
+              enum:
+                - SOURCE
+                - DIAGRAM
+            - type: "null"
+          description: 字段 htmlPageAuthoringMode / html page authoring mode field。
       description: WorkspaceNonFileArtifact 的公开协议结构。 / Public contract for workspace non file artifact.
     WorkspaceFilePage:
       type: object
@@ -11857,42 +11915,24 @@ components:
       additionalProperties: false
       required:
         - id
-        - subject
+        - content
         - status
-        - blocks
-        - blockedBy
       properties:
         id:
           type: string
           description: 字段 id / id field。
-        subject:
+        content:
           type: string
-          description: 字段 subject / subject field。
-        activeForm:
-          oneOf:
-            - type: string
-            - type: "null"
-          description: 字段 activeForm / active form field。
+          description: 任务内容 / task content。
         status:
           type: string
           description: 当前状态 / current status。
-        blocks:
-          type: array
-          items:
-            type: string
-          description: 字段 blocks / blocks field。
-        blockedBy:
-          type: array
-          items:
-            type: string
-          description: 字段 blockedBy / blocked by field。
       description: TaskSummary 的公开协议结构。 / Public contract for task summary.
     TaskProgressExtensionContent:
       type: object
       additionalProperties: false
       required:
         - action
-        - archived
         - total
         - pending
         - inProgress
@@ -11903,19 +11943,6 @@ components:
         action:
           type: string
           description: 字段 action / action field。
-        currentTaskId:
-          oneOf:
-            - type: string
-            - type: "null"
-          description: 字段 currentTaskId / current task id field。
-        currentTaskStatus:
-          oneOf:
-            - type: string
-            - type: "null"
-          description: 字段 currentTaskStatus / current task status field。
-        archived:
-          type: boolean
-          description: 字段 archived / archived field。
         total:
           type: integer
           format: int32

@@ -2128,7 +2128,7 @@
     "operationId": "createPreSignedUpload",
     "group": "files",
     "summary": "创建预签名上传地址 / Create a presigned upload URL",
-    "description": "### 使用场景\n为需要上传的新附件申请对象存储地址。\n\n### Use case\nRequest an object-storage URL for a new attachment.\n\n### 前置条件\n已计算文件 MD5，文件模块为 ai-chat-attachments。\n\n### Prerequisites\nThe file MD5 is known and the module is ai-chat-attachments.\n\n### 行为与副作用\n创建短期上传授权，不代表上传完成。\n\n### Behavior and side effects\nCreates short-lived upload authorization; upload is not yet complete.\n\n### 后续调用\n按返回 headers 上传文件，再调用确认接口。\n\n### Next step\nUpload with the returned headers, then call confirmation.\n\n### 接口摘要\n创建预签名上传地址 / Create a presigned upload URL\n\n### Operation summary\n创建预签名上传地址 / Create a presigned upload URL",
+    "description": "### 使用场景\n为需要上传的新附件申请对象存储地址。\n\n### Use case\nRequest an object-storage URL for a new attachment.\n\n### 前置条件\n已计算文件 MD5 并取得实际文件大小，文件模块为 ai-chat-attachments。\n\n### Prerequisites\nThe file MD5 and actual file size are known, and the module is ai-chat-attachments.\n\n### 行为与副作用\n创建短期上传授权并预占配额，不代表上传完成。\n\n### Behavior and side effects\nCreates short-lived upload authorization and reserves quota; upload is not yet complete.\n\n### 后续调用\n按返回的 uploadMethod 执行 PUT 或 POST_FORM 上传，遵守 maximumBytes，再调用确认接口。\n\n### Next step\nUpload with the returned uploadMethod (PUT or POST_FORM) within maximumBytes, then call confirmation.\n\n### 接口摘要\n创建预签名上传地址 / Create a presigned upload URL\n\n### Operation summary\n创建预签名上传地址 / Create a presigned upload URL",
     "parameters": [
       {
         "name": "channelId",

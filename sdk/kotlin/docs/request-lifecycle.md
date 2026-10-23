@@ -1,6 +1,6 @@
-# SDK 0.7.0 请求生命周期
+# SDK 1.0.0 请求生命周期
 
-契约版本为 0.1.7，HTTP 基础路径仍为 `/api/agents/channel/openapi/v1/{channelId}/chat`。SDK 管理认证、传输、协议解析和连接释放；UI 管理重连、历史恢复、缓存、消息归并和渲染。
+契约版本为 1.0.0，HTTP 基础路径仍为 `/api/agents/channel/openapi/v1/{channelId}/chat`。SDK 管理认证、传输、协议解析和连接释放；UI 管理重连、历史恢复、缓存、消息归并和渲染。
 
 ## 认证和请求作用域
 

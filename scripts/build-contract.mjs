@@ -408,7 +408,6 @@ Object.assign(schemas, {
   }),
   AiChatFileRef: objectOf(["id"], {
     id: { type: "integer", format: "int64" },
-    fileName: nullable({ type: "string" }),
   }),
   ConversationSummary: objectOf(
     ["conversationId", "conversationType", "titleState", "status", "messageCount", "totalTokens", "totalInputTokens", "totalOutputTokens", "usage", "createdTime", "lastUpdateTime"],
@@ -418,7 +417,7 @@ Object.assign(schemas, {
       title: nullable({ type: "string" }),
       titleState: { type: "string" },
       status: { type: "string" },
-      messageCount: { type: "integer", format: "int64", minimum: 0 },
+      messageCount: { type: "integer", format: "int32", minimum: 0 },
       totalTokens: { type: "integer", format: "int64", minimum: 0 },
       totalInputTokens: { type: "integer", format: "int64", minimum: 0 },
       totalOutputTokens: { type: "integer", format: "int64", minimum: 0 },
@@ -518,7 +517,7 @@ Object.assign(schemas, {
     ["taskId", "description", "subagentType", "status", "parentConversationId", "parentMessageId", "resultAvailable", "artifactCount", "notificationStatus", "createdTime", "lastUpdateTime", "cancellable"],
     {
       taskId: { type: "string" }, description: { type: "string" }, subagentType: { type: "string" }, status: { type: "string" },
-      phase: nullable({ type: "string" }), progressPercent: nullable({ type: "integer", format: "int32", minimum: 0, maximum: 100 }),
+      phase: nullable({ type: "string" }),
       parentConversationId: { type: "string" }, parentMessageId: { type: "string" }, childConversationId: nullable({ type: "string" }),
       childMessageId: nullable({ type: "string" }), resultAvailable: { type: "boolean" }, artifactCount: { type: "integer", format: "int32", minimum: 0 },
       notificationStatus: { type: "string" }, failureCode: nullable({ type: "string" }), failureMessage: nullable({ type: "string" }),
@@ -545,9 +544,13 @@ Object.assign(schemas, {
   GeneratePreSignedUrlInput: objectOf(["fileName", "module", "contentMd5"], {
     fileName: { type: "string", maxLength: 255 }, module: { type: "string", const: "ai-chat-attachments" },
     contentMd5: { type: "string", maxLength: 64 }, fileId: nullable({ type: "integer", format: "int64" }),
+    sizeBytes: nullable({ type: "integer", format: "int64", minimum: 0 }),
   }),
   GeneratePreSignedUrlOutput: objectOf(["support"], {
     support: { type: "boolean" }, fileUk: nullable({ type: "string" }), url: nullable({ type: "string", format: "uri" }),
+    uploadMethod: stringEnum("PUT", "POST_FORM"),
+    formFields: { type: "object", additionalProperties: { type: "string" } },
+    maximumBytes: nullable({ type: "integer", format: "int64", minimum: 0 }),
   }),
   AgentFile: objectOf(["id", "fileName", "contentMd5", "size", "createdTime", "lastUpdateTime"], {
     id: { type: "integer", format: "int64" }, fileName: { type: "string" }, contentMd5: { type: "string" },
@@ -555,18 +558,20 @@ Object.assign(schemas, {
     lastUpdateTime: { type: "string", format: "date-time" },
   }),
   PreSignedReadUrl: objectOf(["url"], { url: { type: "string", format: "uri" } }),
-  ReturnedReference: objectOf(["type", "referenceId"], { type: { type: "string" }, referenceId: { type: "integer", format: "int64" } }),
+  ReturnedReference: objectOf(["citationType", "referenceId"], { citationType: { type: "string" }, referenceId: { type: "integer", format: "int64" } }),
   CitationMetadata: objectOf(["type", "referenceId"], {
     type: { type: "string" }, referenceId: { type: "integer", format: "int64" },
     title: nullable({ type: "string" }), description: nullable({ type: "string" }),
   }),
-  WorkspaceFile: objectOf(["relativePath", "size", "fileName", "mimeType", "lastUpdateTime"], {
+  WorkspaceFile: objectOf(["fileId", "relativePath", "size", "fileName", "mimeType", "lastUpdateTime"], {
+    fileId: { type: "integer", format: "int64" },
     relativePath: { type: "string" }, size: { type: "integer", format: "int64", minimum: 0 }, fileName: { type: "string" },
     mimeType: { type: "string" }, lastUpdateTime: { type: "string", format: "date-time" },
   }),
   WorkspaceNonFileArtifact: objectOf(["artifactId", "kind", "title", "description", "lastUpdateTime"], {
     artifactId: { type: "integer", format: "int64" }, kind: { type: "string" }, title: { type: "string" }, description: { type: "string" },
     lastUpdateTime: { type: "string", format: "date-time" }, previewUrl: nullable({ type: "string", format: "uri" }),
+    htmlPageAuthoringMode: nullable(stringEnum("SOURCE", "DIAGRAM")),
   }),
   WorkspaceFilePage: objectOf(["records", "page"], { records: arrayOf(ref("WorkspaceFile")), page: ref("PageInfo") }),
   WorkspaceArtifactList: objectOf(["fileArtifacts", "nonFileArtifacts"], {
@@ -655,6 +660,7 @@ Object.assign(schemas, {
   AskUserQuestionOption: objectOf(["text", "recommended"], { text: { type: "string" }, recommended: { type: "boolean" } }),
   AiChatUserQueryBriefEvent: discriminatedObject("type", "user-query", ["query"], {
     query: { type: "string" }, attachments: nullable(arrayOf(ref("MediaAttachment"))),
+    executionType: nullable(stringEnum("USER_MESSAGE", "ASYNC_TASK_NOTIFICATION", "SUBAGENT_ASYNC_EXECUTION", "SUBAGENT", "CONTEXT_COMPRESSION", "CONTEXT_INSPECTION", "COLLABORATION_TURN", "COLLABORATION_STEER", "COLLABORATION_NOTIFICATION", "GOAL_CONTINUATION")),
   }),
   AiChatCompressorContextStartBriefEvent: discriminatedObject("type", "compressor-context-start", [], {}),
   AiChatCompressorContextEndBriefEvent: discriminatedObject("type", "compressor-context-end", [], {}),
@@ -662,7 +668,10 @@ Object.assign(schemas, {
     level: { type: "string" }, warning: { type: "string" },
   }),
   AiChatManualInterruptBriefEvent: discriminatedObject("type", "manual-interrupt", [], {}),
-  AiChatErrorBriefEvent: discriminatedObject("type", "error", ["message"], { message: { type: "string" } }),
+  AiChatErrorBriefEvent: discriminatedObject("type", "error", ["message"], {
+    message: { type: "string" },
+    terminalReason: nullable(stringEnum("COMPLETED", "EXECUTION_ERROR", "INTERRUPTED", "USER_INTERRUPTED", "SYSTEM_INTERRUPTED", "WORKSPACE_COMMIT_FAILED", "EXECUTION_LEASE_EXPIRED", "EXECUTION_DEADLINE_EXCEEDED", "TERMINAL_EVENT_RECONCILED", "TERMINAL_EVENT_MISSING_RECONCILED", "LEGACY_STATE_RECONCILED")),
+  }),
   AiChatStartBriefEvent: discriminatedObject("type", "start", [], {}),
   AiChatThinkBriefEvent: discriminatedObject("type", "think", ["message"], { message: { type: "string" } }),
   AiChatRequestBriefEvent: discriminatedObject("type", "chat-client-request", ["messages"], {
@@ -755,12 +764,11 @@ const extensionContent = {
   JsRunScriptExtensionContent: objectOf(["script"], { script: { type: "string" } }),
   JsRunScriptResultExtensionContent: objectOf(["stdout"], { result: nullable({ type: "string" }), stdout: { type: "string" } }),
   SkillResourceExtensionContent: objectOf(["operationType", "filepath"], { operationType: { type: "string" }, filepath: { type: "string" } }),
-  TaskSummary: objectOf(["id", "subject", "status", "blocks", "blockedBy"], {
-    id: { type: "string" }, subject: { type: "string" }, activeForm: nullable({ type: "string" }), status: { type: "string" },
-    blocks: arrayOf({ type: "string" }), blockedBy: arrayOf({ type: "string" }),
+  TaskSummary: objectOf(["id", "content", "status"], {
+    id: { type: "string" }, content: { type: "string", description: "任务内容 / task content。" }, status: { type: "string" },
   }),
-  TaskProgressExtensionContent: objectOf(["action", "archived", "total", "pending", "inProgress", "completed", "progressPercent", "tasks"], {
-    action: { type: "string" }, currentTaskId: nullable({ type: "string" }), currentTaskStatus: nullable({ type: "string" }), archived: { type: "boolean" },
+  TaskProgressExtensionContent: objectOf(["action", "total", "pending", "inProgress", "completed", "progressPercent", "tasks"], {
+    action: { type: "string" },
     total: { type: "integer", format: "int32" }, pending: { type: "integer", format: "int32" }, inProgress: { type: "integer", format: "int32" },
     completed: { type: "integer", format: "int32" }, progressPercent: { type: "integer", format: "int32" }, tasks: arrayOf(ref("TaskSummary")),
   }),
@@ -819,7 +827,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Lingya Agents OpenAPI",
-    version: "0.1.7",
+    version: "1.0.0",
     description: [
       "本契约描述灵涯 Agents 面向可信服务端的公开渠道 API，支持 OPENAPI-HMAC-SHA256-V1 签名或短期渠道令牌验证请求，不包含 Studio 管理接口。在线文档只展示请求，不会在浏览器中收集或保存 secret。",
       "This contract describes the public Lingya Agents channel API for trusted servers. Requests use OPENAPI-HMAC-SHA256-V1 or short-lived channel tokens, and Studio administration endpoints are excluded. The online reference only displays requests and never collects or stores a secret in the browser.",
@@ -1123,6 +1131,8 @@ const fieldLabels = {
   inputTokens: "输入 Token 数 / input token count", outputTokens: "输出 Token 数 / output token count", totalTokens: "总 Token 数 / total token count",
   description: "可读说明 / human-readable description", title: "标题 / title", message: "消息正文 / message text", query: "用户问题 / user query",
   url: "预签名 URL / presigned URL", support: "当前存储是否支持该操作 / whether the storage supports this operation",
+  sizeBytes: "实际文件大小（字节） / actual file size in bytes", uploadMethod: "客户端上传方式 / upload method",
+  formFields: "表单上传字段 / form fields", maximumBytes: "受限上传允许的最大字节数 / maximum bytes for bounded upload",
 };
 
 const exampleValues = {
@@ -1139,6 +1149,7 @@ const exampleValues = {
   questionId: "question-demo-001", rawJson: "{}", referenceId: 1001, resultId: "sql-result-demo-001", serverName: "lingtong.lingya.tech",
   shareCode: "share-demo-code", shareId: 1001, status: "COMPLETED", summary: "Example summary", title: "Quarterly report summary",
   toolCallId: "tool-call-demo-001", toolName: "example-tool", type: "message", url: "https://objects.example.com/preview/example",
+  sizeBytes: 248832, uploadMethod: "POST_FORM", formFields: { key: "uploads/2026/10/quarterly-report.pdf", policy: "example-policy" }, maximumBytes: 262144,
   warning: "Context usage is approaching the configured limit.",
 };
 
@@ -1268,10 +1279,12 @@ curl --request ${method.toUpperCase()} "${"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?$
 
 const words = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]/g, " ").toLowerCase();
 const describeField = (name) => `${fieldLabels[name] ?? `字段 ${name} / ${words(name)} field`}。`;
+// Explicit value maps (presign form fields) stay open; every other object schema is closed.
+const openObjectMaps = new Set([schemas.GeneratePreSignedUrlOutput.properties.formFields]);
 const walkSchema = (node, propertyName) => {
   if (!node || typeof node !== "object" || Array.isArray(node)) return;
   if (propertyName && !node.description?.includes(" / ")) node.description = `${describeField(propertyName)}${node.description ? ` ${node.description}` : ""}`;
-  if (node.type === "object" && node !== schemas.ConversationUserMessage.properties.metadata) node.additionalProperties = false;
+  if (node.type === "object" && !openObjectMaps.has(node) && node !== schemas.ConversationUserMessage.properties.metadata) node.additionalProperties = false;
   if (node.properties) for (const [name, property] of Object.entries(node.properties)) walkSchema(property, name);
   if (node.items) walkSchema(node.items);
   for (const keyword of ["oneOf", "allOf", "anyOf"]) if (node[keyword]) node[keyword].forEach((child) => walkSchema(child));

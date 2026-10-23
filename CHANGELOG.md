@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0 - 2026-10-23
+
+- Promote the public contract to 1.0.0 together with all four SDKs; the HTTP base path remains `/api/agents/channel/openapi/v1/{channelId}/chat`.
+- Presigned uploads: add `sizeBytes` to `GeneratePreSignedUrlInput` and `uploadMethod`, `formFields`, `maximumBytes` to `GeneratePreSignedUrlOutput`.
+- Fix `ReturnedReference` to use the server-side `citationType` field; batch citation metadata previously could not bind.
+- Align response models with server DTOs: `TaskSummary` is `{id, content, status}`; drop the nonexistent `currentTaskId`, `currentTaskStatus` and `archived` from `TaskProgressExtensionContent`; add `WorkspaceFile.fileId`; add `WorkspaceNonFileArtifact.htmlPageAuthoringMode`; add `AiChatErrorBriefEvent.terminalReason` and `AiChatUserQueryBriefEvent.executionType`.
+- Remove fields the server never returns: `AiChatFileRef.fileName` and `SubagentTask.progressPercent`; correct `ConversationSummary.messageCount` to int32.
+
 ## 0.1.7 - 2026-10-20
 
 - Centralize four SDK runtimes, facade generators, templates and shared lifecycle vectors; add deterministic generation manifests and full-source CI checks.

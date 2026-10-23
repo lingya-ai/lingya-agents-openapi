@@ -1,6 +1,6 @@
 {
   "name": "@lingya-ai/agents-sdk",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "Strongly typed TypeScript SDK for Lingya Agents OpenAPI with server HMAC and browser token authentication",
   "author": "Lingya AI",
   "license": "MIT",

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.7",
+  "version": "1.0.0",
   "baseUrl": "https://lingtong.lingya.tech",
   "warning": "Use credentials only on a trusted server. Never expose OPENAPI_SK in a browser or untrusted client.",
   "operations": [
@@ -126,15 +126,14 @@
           },
           "files": [
             {
-              "id": 1,
-              "fileName": "quarterly-report.pdf"
+              "id": 1
             }
           ],
           "planMode": false,
           "goalMode": false
         },
-        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1,\n      \"fileName\": \"quarterly-report.pdf\"\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}",
-        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1,\n      \"fileName\": \"quarterly-report.pdf\"\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
+        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
       },
       "response": {
         "status": "201",
@@ -177,15 +176,14 @@
           },
           "files": [
             {
-              "id": 1,
-              "fileName": "quarterly-report.pdf"
+              "id": 1
             }
           ],
           "planMode": false,
           "goalMode": false
         },
-        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001 HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1,\n      \"fileName\": \"quarterly-report.pdf\"\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}",
-        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1,\n      \"fileName\": \"quarterly-report.pdf\"\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
+        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/conversations/conversation-demo-001 HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/conversations/conversation-demo-001\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n{\n  \"query\": \"Summarize the quarterly report\",\n  \"conversationId\": \"conversation-demo-001\",\n  \"chatModelSpec\": {\n    \"keyGroupId\": 42,\n    \"model\": \"example-model\",\n    \"thinking\": true,\n    \"stopSequences\": [\n      \"example\"\n    ],\n    \"temperature\": 0,\n    \"maxTokens\": 1,\n    \"topP\": 0,\n    \"topK\": 1,\n    \"frequencyPenalty\": -2,\n    \"presencePenalty\": -2\n  },\n  \"files\": [\n    {\n      \"id\": 1\n    }\n  ],\n  \"planMode\": false,\n  \"goalMode\": false\n}\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
       },
       "response": {
         "status": "201",
@@ -299,7 +297,8 @@
               "fileName": "quarterly-report.pdf",
               "mimeType": "application/pdf"
             }
-          ]
+          ],
+          "executionType": "USER_MESSAGE"
         }
       }
     },
@@ -1173,7 +1172,6 @@
               "subagentType": "example",
               "status": "COMPLETED",
               "phase": "example",
-              "progressPercent": 0,
               "parentConversationId": "example",
               "parentMessageId": "example",
               "childConversationId": "example",
@@ -1224,7 +1222,6 @@
               "subagentType": "example",
               "status": "COMPLETED",
               "phase": "example",
-              "progressPercent": 0,
               "parentConversationId": "example",
               "parentMessageId": "example",
               "childConversationId": "example",
@@ -1248,7 +1245,6 @@
               "subagentType": "example",
               "status": "COMPLETED",
               "phase": "example",
-              "progressPercent": 0,
               "parentConversationId": "example",
               "parentMessageId": "example",
               "childConversationId": "example",
@@ -1295,7 +1291,6 @@
           "subagentType": "example",
           "status": "COMPLETED",
           "phase": "example",
-          "progressPercent": 0,
           "parentConversationId": "example",
           "parentMessageId": "example",
           "childConversationId": "example",
@@ -1337,7 +1332,6 @@
           "subagentType": "example",
           "status": "COMPLETED",
           "phase": "example",
-          "progressPercent": 0,
           "parentConversationId": "example",
           "parentMessageId": "example",
           "childConversationId": "example",
@@ -1380,7 +1374,6 @@
             "subagentType": "example",
             "status": "COMPLETED",
             "phase": "example",
-            "progressPercent": 0,
             "parentConversationId": "example",
             "parentMessageId": "example",
             "childConversationId": "example",
@@ -1420,7 +1413,8 @@
               "title": "Quarterly report summary",
               "description": "Example generated artifact",
               "lastUpdateTime": "2026-01-15T08:00:00Z",
-              "previewUrl": "https://objects.example.com/preview/example"
+              "previewUrl": "https://objects.example.com/preview/example",
+              "htmlPageAuthoringMode": "SOURCE"
             }
           ]
         }
@@ -1527,7 +1521,8 @@
                   "fileName": "quarterly-report.pdf",
                   "mimeType": "application/pdf"
                 }
-              ]
+              ],
+              "executionType": "USER_MESSAGE"
             }
           ]
         }
@@ -1572,7 +1567,8 @@
                       "fileName": "quarterly-report.pdf",
                       "mimeType": "application/pdf"
                     }
-                  ]
+                  ],
+                  "executionType": "USER_MESSAGE"
                 }
               ]
             }
@@ -1713,10 +1709,11 @@
           "fileName": "quarterly-report.pdf",
           "module": "ai-chat-attachments",
           "contentMd5": "1B2M2Y8AsgTpgAmY7PhCfg==",
-          "fileId": 1001
+          "fileId": 1001,
+          "sizeBytes": 248832
         },
-        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/files/pre-signed-url/write HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n{\n  \"fileName\": \"quarterly-report.pdf\",\n  \"module\": \"ai-chat-attachments\",\n  \"contentMd5\": \"1B2M2Y8AsgTpgAmY7PhCfg==\",\n  \"fileId\": 1001\n}",
-        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/files/pre-signed-url/write\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n{\n  \"fileName\": \"quarterly-report.pdf\",\n  \"module\": \"ai-chat-attachments\",\n  \"contentMd5\": \"1B2M2Y8AsgTpgAmY7PhCfg==\",\n  \"fileId\": 1001\n}\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
+        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/files/pre-signed-url/write HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n{\n  \"fileName\": \"quarterly-report.pdf\",\n  \"module\": \"ai-chat-attachments\",\n  \"contentMd5\": \"1B2M2Y8AsgTpgAmY7PhCfg==\",\n  \"fileId\": 1001,\n  \"sizeBytes\": 248832\n}",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/files/pre-signed-url/write\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n{\n  \"fileName\": \"quarterly-report.pdf\",\n  \"module\": \"ai-chat-attachments\",\n  \"contentMd5\": \"1B2M2Y8AsgTpgAmY7PhCfg==\",\n  \"fileId\": 1001,\n  \"sizeBytes\": 248832\n}\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
       },
       "response": {
         "status": "201",
@@ -1726,7 +1723,10 @@
         "body": {
           "support": true,
           "fileUk": "temporary-file-key",
-          "url": "https://objects.example.com/preview/example"
+          "url": "https://objects.example.com/preview/example",
+          "uploadMethod": "PUT",
+          "formFields": {},
+          "maximumBytes": 262144
         }
       }
     },
@@ -1872,12 +1872,12 @@
         "contentType": "application/json",
         "body": [
           {
-            "type": "message",
+            "citationType": "KNOWLEDGE_BASE",
             "referenceId": 1001
           }
         ],
-        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/knowledge-bases/citations/metadata HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n[\n  {\n    \"type\": \"message\",\n    \"referenceId\": 1001\n  }\n]",
-        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/knowledge-bases/citations/metadata\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n[\n  {\n    \"type\": \"message\",\n    \"referenceId\": 1001\n  }\n]\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
+        "rawHttp": "POST /api/agents/channel/openapi/v1/11111111-2222-4333-8444-555555555555/chat/knowledge-bases/citations/metadata HTTP/1.1\nHost: lingtong.lingya.tech\nX-OpenAPI-AK: <access-key>\nX-OpenAPI-Timestamp: <unix-seconds>\nX-OpenAPI-Nonce: <base64url-nonce>\nX-OpenAPI-User: <base64url-external-user>\nX-OpenAPI-Signature: <lowercase-hex-signature>\nContent-Type: application/json\n\n[\n  {\n    \"citationType\": \"KNOWLEDGE_BASE\",\n    \"referenceId\": 1001\n  }\n]",
+        "curl": "BASE_URL=\"${BASE_URL:-https://lingtong.lingya.tech}\"\nCHANNEL_ID=\"${CHANNEL_ID:-11111111-2222-4333-8444-555555555555}\"\nEXTERNAL_USER_ID=\"${EXTERNAL_USER_ID:-external-user-demo}\"\nRAW_PATH=\"/api/agents/channel/openapi/v1/$CHANNEL_ID/chat/knowledge-bases/citations/metadata\"\nRAW_QUERY=\"\"\nBODY=$(cat <<'JSON'\n[\n  {\n    \"citationType\": \"KNOWLEDGE_BASE\",\n    \"referenceId\": 1001\n  }\n]\nJSON\n)\neval \"$(node scripts/sign-request.mjs --method POST --path \"$RAW_PATH\" --query \"$RAW_QUERY\" --user \"$EXTERNAL_USER_ID\" --content-type application/json --body \"$BODY\" --format shell)\"\n\ncurl --request POST \"${BASE_URL}${RAW_PATH}${RAW_QUERY:+?${RAW_QUERY}}\" \\\n  -H \"X-OpenAPI-AK: ${X_OPENAPI_AK}\" \\\n  -H \"X-OpenAPI-Timestamp: ${X_OPENAPI_TIMESTAMP}\" \\\n  -H \"X-OpenAPI-Nonce: ${X_OPENAPI_NONCE}\" \\\n  -H \"X-OpenAPI-User: ${X_OPENAPI_USER}\" \\\n  -H \"X-OpenAPI-Signature: ${X_OPENAPI_SIGNATURE}\" \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary \"$BODY\""
       },
       "response": {
         "status": "201",
@@ -1944,6 +1944,7 @@
           "fileArtifacts": {
             "records": [
               {
+                "fileId": 1001,
                 "relativePath": "example",
                 "size": 0,
                 "fileName": "quarterly-report.pdf",
@@ -1964,7 +1965,8 @@
               "title": "Quarterly report summary",
               "description": "Example generated artifact",
               "lastUpdateTime": "2026-01-15T08:00:00Z",
-              "previewUrl": "https://objects.example.com/preview/example"
+              "previewUrl": "https://objects.example.com/preview/example",
+              "htmlPageAuthoringMode": "SOURCE"
             }
           ]
         }
